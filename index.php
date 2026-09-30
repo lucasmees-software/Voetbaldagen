@@ -8,7 +8,8 @@
 <body>
     <div class="text">
         <h1>voetbaldagen</h1>
-        <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis officiis doloribus modi repellat beatae ducimus voluptatibus, eum fugiat! Perferendis dolor nam velit maiores omnis, voluptate quo dicta atque doloribus alias.</p>
+        <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam nemo numquam dolores doloremque tempore soluta, eaque assumenda earum eligendi totam ad cum molestias unde dolorem quas temporibus facilis fugit consequuntur iste. Quas sapiente corporis nesciunt blanditiis earum aperiam! Provident consectetur assumenda inventore laborum cumque, repellendus non totam quos iusto similique!
+        </p>
     </div>
 </body>
 </html>
