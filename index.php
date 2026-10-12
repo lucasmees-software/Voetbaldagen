@@ -29,7 +29,7 @@ $teams = $teamsClass->getTeams();
             <td><?= $team['id'] ?></td>
             <td><?= htmlspecialchars($team['naam']) ?></td>
         </tr>
-    <?php endforeach; ?>
+    <?php endforeach; ?> 
 
 </table>
 
