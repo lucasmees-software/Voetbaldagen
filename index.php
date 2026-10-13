@@ -1,10 +1,8 @@
 <?php
-
 require_once __DIR__ . '/classes/teams.php';
 
 $teamsClass = new Teams($pdo);
 $teams = $teamsClass->getTeams();
-
 ?>
 
 <!DOCTYPE html>
@@ -17,7 +15,6 @@ $teams = $teamsClass->getTeams();
 <body>
 
 <h1>Teams</h1>
-
 <table border="1">
     <tr>
         <th>ID</th>
@@ -35,3 +32,4 @@ $teams = $teamsClass->getTeams();
 
 </body>
 </html>
+
