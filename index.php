@@ -31,4 +31,5 @@ $teams = $teamsClass->getTeams();
         <?php endforeach; ?>
     </table>
 </body>
+
 </html>
