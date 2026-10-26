@@ -1,11 +1,8 @@
 <?php
-
-require_once __DIR__ . '/../database/conn.php';
-
 class Teams
 {
     private $conn;
-
+    
     public function __construct($conn)
     {
         $this->conn = $conn;
