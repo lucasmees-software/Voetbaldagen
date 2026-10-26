@@ -15,7 +15,15 @@ $teams = $teamsClass->getTeams();
 </head>
 
 <body>
-    
+<nav class="main-nav">
+    <ul>
+        <li><a href="/index.php">Home</a></li>
+        <li><a href="/Deelnemers.php">Deelnemers</a></li>
+        <li><a href="/Pages/Teams.php">Teams</a></li>
+        <li><a href="/Pages/Wedstrijden.php">Wedstrijden</a></li>
+    </ul>
+</nav>
+
     <h1>Teams</h1>
     <table border="1">
         <tr>
