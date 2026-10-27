@@ -1,18 +1,21 @@
+
 <?php
+
 class Teams
 {
-    private $conn;
-    
-    public function __construct($conn)
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo)
     {
-        $this->conn = $conn;
+        $this->pdo = $pdo;
     }
 
-    public function getTeams()
+    public function getTeams(): array
     {
-        $sql = "SELECT * FROM teams";
-        $result = $this->conn->query($sql);
+        $query = $this->pdo->query(
+            "SELECT * FROM ploeg ORDER BY naam ASC"
+        );
 
-        return $result->fetchAll(PDO::FETCH_ASSOC);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 }
