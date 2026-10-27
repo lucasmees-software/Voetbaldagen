@@ -13,22 +13,26 @@ try {
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+    <link rel="stylesheet" href="../css/stylesheet.css">
     <meta charset="UTF-8">
     <title>Database tabellen</title>
 </head>
 <body>
+    
+    <h1>Teams</h1>
+    <table border="1">
+        <tr>
+            <th>ID</t5h>
+            <th>Teamnaam</th>
+        </tr>
 
-    <h1>Tabellen in database voetbal</h1>
-
-    <?php if (empty($tabellen)): ?>
-        <p>Er staan geen tabellen in deze database.</p>
-    <?php else: ?>
-        <ul>
-            <?php foreach ($tabellen as $tabel): ?>
-                <li><?= htmlspecialchars($tabel) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
+        <?php foreach ($teams as $team): ?>
+            <tr>
+                <td><?= $team['id'] ?></td>
+                <td><?= htmlspecialchars($team['naam']) ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
 </body>
+
 </html>
