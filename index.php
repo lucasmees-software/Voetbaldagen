@@ -1,4 +1,3 @@
-
 <?php
 require_once __DIR__ . '/database/conn.php';
 require_once __DIR__ . '/classes/teams.php';
@@ -16,6 +15,9 @@ $teams = $teamsClass->getTeams();
 </head>
 <body>
 
+<?php include('../voetbaldagen/includes/header.html') ?>
+
+<div class="teams">
     <h1>Teams</h1>
 
     <table border="1">
@@ -34,6 +36,6 @@ $teams = $teamsClass->getTeams();
             <?php endforeach; ?>
         </tbody>
     </table>
-
+</div>
 </body>
 </html>
