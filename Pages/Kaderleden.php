@@ -1,6 +1,6 @@
 
 <?php
-require_once __DIR__ . '/../classes/kaderleden.php';
+require_once __DIR__ . '/../Classes/Kaderleden.php';
 
 $pdo = new PDO(
     'mysql:host=localhost;dbname=voetbaldagen_horst;charset=utf8mb4',
@@ -23,7 +23,7 @@ function veilig($waarde) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kaderleden</title>
-    <link rel="stylesheet" href="../css/stylesheet.css">
+    <link rel="stylesheet" href="../Css/Stylesheet.css">
         
     <style>
         main {
@@ -62,7 +62,7 @@ function veilig($waarde) {
 </head>
 <body>
 
-<?php include __DIR__ . '/../includes/header.html'; ?>
+<?php include __DIR__ . '/../Includes/Header.html'; ?>
 
 <main>
     <h1>Kaderleden</h1>
