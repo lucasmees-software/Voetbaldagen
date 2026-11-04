@@ -34,7 +34,7 @@ $teams = $teamsClass->getTeams();
 
         <?php foreach ($teams as $team): ?>
             <tr>
-                <td><?= $team['id'] ?></td>
+                <td><?= $team['ploeg_id'] ?></td>
                 <td><?= htmlspecialchars($team['naam']) ?></td>
             </tr>
         <?php endforeach; ?>
