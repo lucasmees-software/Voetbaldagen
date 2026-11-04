@@ -4,7 +4,7 @@ require_once __DIR__ . '/../classes/kaderleden.php';
 
 // Databaseverbinding
 $host = 'localhost';
-$dbname = 'voetbal';
+$dbname = 'voetbaldagen_horst';
 $username = 'root';
 $password = '';
 
