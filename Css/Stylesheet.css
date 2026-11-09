@@ -226,23 +226,35 @@ main a.button {
         min-width: 600px;
     }
 }
-
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #eee;
 }
 
-h1 {
-    text-align: center;
+/* navigatiebalk */
+nav {
+    background-color: #333;
+    padding: 10px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-right: 15px;
+}
+
+nav a:hover {
+    text-decoration: underline;
 }
 
 /* formulier in het midden */
 form {
     width: 350px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: white;
-    border: 1px solid #ccc;
+    margin: 20px auto;
+}
+
+h1 {
+    text-align: center;
 }
 
 label {
@@ -252,18 +264,10 @@ label {
 
 input {
     width: 100%;
-    padding: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     box-sizing: border-box;
 }
 
-button {
-    padding: 8px 16px;
-    cursor: pointer;
-}
-
 .melding {
-    width: 350px;
-    margin: 0 auto 10px;
     text-align: center;
 }
