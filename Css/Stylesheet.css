@@ -226,3 +226,44 @@ main a.button {
         min-width: 600px;
     }
 }
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eee;
+}
+
+h1 {
+    text-align: center;
+}
+
+/* formulier in het midden */
+form {
+    width: 350px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ccc;
+}
+
+label {
+    display: block;
+    margin-bottom: 3px;
+}
+
+input {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.melding {
+    width: 350px;
+    margin: 0 auto 10px;
+    text-align: center;
+}
