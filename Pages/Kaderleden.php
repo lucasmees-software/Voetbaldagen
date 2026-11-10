@@ -24,6 +24,7 @@ $lijst = $deelnemers->ophalen();
     <link rel="stylesheet" href="../Css/Stylesheet.css">
 </head>
 <body>
+<?php include __DIR__ . "/../Includes/Navigatie.php"; ?>
 
 <h1>Deelnemers</h1>
 
