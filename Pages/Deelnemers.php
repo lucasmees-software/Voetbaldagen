@@ -1,117 +1,173 @@
 <?php
-require_once '../Classes/Deelnemers.php';
+require_once '../Classes/Teams.php';
 
 // verbinding met de database (aanpassen naar jullie eigen verbinding)
 $conn = new PDO('mysql:host=localhost;dbname=voetbaldagen_horst', 'root', '');
 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$deelnemers = new Deelnemers($conn);
+$teams = new Teams($conn);
 $melding = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $actie = $_POST['actie'];
 
-    if ($actie == 'verwijderen') {
-        $deelnemers->verwijderen($_POST['deelnemer_id']);
-        header('Location: Deelnemers.php');
-        exit;
-    }
-
-    if (trim($_POST['roepnaam']) == "" || trim($_POST['achternaam']) == "") {
-        $melding = "Vul minimaal roepnaam en achternaam in.";
-    } else {
-        if ($actie == 'aanpassen') {
-            $deelnemers->aanpassen($_POST['deelnemer_id'], $_POST);
+    try {
+        if ($actie == 'verwijderen') {
+            $teams->verwijderen($_POST['basisteam_id']);
+        } elseif ($actie == 'aanpassen') {
+            $teams->aanpassen($_POST['basisteam_id'], $_POST);
         } else {
-            $deelnemers->toevoegen($_POST);
+            $teams->toevoegen($_POST);
         }
+
         // pagina opnieuw laden zodat hij niet dubbel opslaat bij verversen
-        header('Location: Deelnemers.php');
+        header('Location: Teams.php');
         exit;
+    } catch (PDOException $e) {
+        if ($actie == 'verwijderen') {
+            $melding = "Dit team kan niet verwijderd worden, er hangt nog iets aan vast.";
+        } else {
+            $melding = "Opslaan mislukt, bestaat er al een team met deze naam in deze editie?";
+        }
     }
 }
 
-// als er ?bewerk=ID in de url staat, laden we die deelnemer in het formulier
-$bewerk = null;
-if (isset($_GET['bewerk'])) {
-    $bewerk = $deelnemers->ophalenEen($_GET['bewerk']);
-}
-
-$lijst = $deelnemers->ophalen();
+$lijst = $teams->ophalen();
+$edities = $teams->ophalenEdities();
 ?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Deelnemers</title>
+    <title>Teams</title>
     <link rel="stylesheet" href="../Css/Stylesheet.css">
 </head>
 <body>
 
 <?php include '../Includes/Header.html'; ?>
 
-<h1><?= $bewerk ? 'Deelnemer aanpassen' : 'Deelnemer toevoegen' ?></h1>
+<h1>Teams</h1>
 
 <?php if ($melding != ""): ?>
     <p class="melding"><?= htmlspecialchars($melding) ?></p>
 <?php endif; ?>
 
-<form method="post" class="formulier">
-    <input type="hidden" name="actie" value="<?= $bewerk ? 'aanpassen' : 'toevoegen' ?>">
-    <input type="hidden" name="deelnemer_id" value="<?= $bewerk['deelnemer_id'] ?? '' ?>">
+<p class="midden">
+    <button type="button" id="openToevoegen">Team toevoegen</button>
+</p>
 
-    <label>Roepnaam *</label>
-    <input type="text" name="roepnaam" value="<?= htmlspecialchars($bewerk['roepnaam'] ?? '') ?>" required>
-
-    <label>Voorvoegsel</label>
-    <input type="text" name="voorvoegsel" value="<?= htmlspecialchars($bewerk['voorvoegsel'] ?? '') ?>">
-
-    <label>Achternaam *</label>
-    <input type="text" name="achternaam" value="<?= htmlspecialchars($bewerk['achternaam'] ?? '') ?>" required>
-
-    <label>Geboortedatum</label>
-    <input type="date" name="geboortedatum" value="<?= htmlspecialchars($bewerk['geboortedatum'] ?? '') ?>">
-
-    <label>Woonplaats</label>
-    <input type="text" name="woonplaats" value="<?= htmlspecialchars($bewerk['woonplaats'] ?? '') ?>">
-
-    <label>Telefoon</label>
-    <input type="text" name="telefoon" value="<?= htmlspecialchars($bewerk['telefoon'] ?? '') ?>">
-
-    <button type="submit"><?= $bewerk ? 'Wijzigingen opslaan' : 'Opslaan' ?></button>
-    <?php if ($bewerk): ?>
-        <a href="Deelnemers.php">Annuleren</a>
-    <?php endif; ?>
-</form>
-
-<h2>Alle deelnemers</h2>
-
+<!-- klik op een rij om het team aan te passen of te verwijderen -->
 <table>
     <tr>
         <th>Naam</th>
-        <th>Geboortedatum</th>
-        <th>Woonplaats</th>
-        <th>Telefoon</th>
-        <th></th>
+        <th>Editie</th>
+        <th>Doel aantal deelnemers</th>
+        <th>Kleedlokaal</th>
     </tr>
-    <?php foreach ($lijst as $d): ?>
-        <tr>
-            <td><?= htmlspecialchars($d['roepnaam'] . ' ' . $d['voorvoegsel'] . ' ' . $d['achternaam']) ?></td>
-            <td><?= htmlspecialchars($d['geboortedatum'] ?? '') ?></td>
-            <td><?= htmlspecialchars($d['woonplaats'] ?? '') ?></td>
-            <td><?= htmlspecialchars($d['telefoon'] ?? '') ?></td>
-            <td>
-                <a href="Deelnemers.php?bewerk=<?= $d['deelnemer_id'] ?>">Aanpassen</a>
-
-                <form method="post" class="verwijder">
-                    <input type="hidden" name="actie" value="verwijderen">
-                    <input type="hidden" name="deelnemer_id" value="<?= $d['deelnemer_id'] ?>">
-                    <button type="submit">Verwijderen</button>
-                </form>
-            </td>
+    <?php foreach ($lijst as $t): ?>
+        <tr class="teamrij"
+            data-id="<?= $t['basisteam_id'] ?>"
+            data-editie="<?= $t['editie_id'] ?>"
+            data-naam="<?= htmlspecialchars($t['naam']) ?>"
+            data-doel="<?= $t['doel_aantal_deelnemers'] ?>"
+            data-kleedlokaal="<?= htmlspecialchars($t['kleedlokaal'] ?? '') ?>">
+            <td><?= htmlspecialchars($t['naam']) ?></td>
+            <td><?= htmlspecialchars($t['editie_naam']) ?></td>
+            <td><?= htmlspecialchars($t['doel_aantal_deelnemers']) ?></td>
+            <td><?= htmlspecialchars($t['kleedlokaal'] ?? '') ?></td>
         </tr>
     <?php endforeach; ?>
 </table>
 
+<!-- schermpje: team toevoegen -->
+<div class="modal" id="toevoegModal">
+    <div class="modal-inhoud">
+        <h2>Team toevoegen</h2>
+
+        <form method="post">
+            <input type="hidden" name="actie" value="toevoegen">
+
+            <label>Editie *</label>
+            <select name="editie_id" required>
+                <?php foreach ($edities as $e): ?>
+                    <option value="<?= $e['editie_id'] ?>"><?= htmlspecialchars($e['naam']) ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <label>Naam *</label>
+            <input type="text" name="naam" required>
+
+            <label>Doel aantal deelnemers *</label>
+            <input type="number" name="doel_aantal_deelnemers" min="1" value="16" required>
+
+            <label>Kleedlokaal</label>
+            <input type="text" name="kleedlokaal">
+
+            <button type="submit">Opslaan</button>
+            <button type="button" class="sluit">Annuleren</button>
+        </form>
+    </div>
+</div>
+
+<!-- schermpje: team aanpassen of verwijderen -->
+<div class="modal" id="bewerkModal">
+    <div class="modal-inhoud">
+        <h2>Team aanpassen</h2>
+
+        <form method="post">
+            <input type="hidden" name="basisteam_id" id="bewerkId">
+
+            <label>Editie *</label>
+            <select name="editie_id" id="bewerkEditie" required>
+                <?php foreach ($edities as $e): ?>
+                    <option value="<?= $e['editie_id'] ?>"><?= htmlspecialchars($e['naam']) ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <label>Naam *</label>
+            <input type="text" name="naam" id="bewerkNaam" required>
+
+            <label>Doel aantal deelnemers *</label>
+            <input type="number" name="doel_aantal_deelnemers" id="bewerkDoel" min="1" required>
+
+            <label>Kleedlokaal</label>
+            <input type="text" name="kleedlokaal" id="bewerkKleedlokaal">
+
+            <button type="submit" name="actie" value="aanpassen">Opslaan</button>
+            <button type="submit" name="actie" value="verwijderen" formnovalidate
+                    onclick="return confirm('Weet je zeker dat je dit team wilt verwijderen?')">Verwijderen</button>
+            <button type="button" class="sluit">Annuleren</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // knop: nieuw team toevoegen
+    document.getElementById('openToevoegen').onclick = function () {
+        document.getElementById('toevoegModal').classList.add('open');
+    };
+
+    // klik op een rij: gegevens invullen en schermpje openen
+    var rijen = document.querySelectorAll('.teamrij');
+    for (var i = 0; i < rijen.length; i++) {
+        rijen[i].onclick = function () {
+            document.getElementById('bewerkId').value = this.dataset.id;
+            document.getElementById('bewerkEditie').value = this.dataset.editie;
+            document.getElementById('bewerkNaam').value = this.dataset.naam;
+            document.getElementById('bewerkDoel').value = this.dataset.doel;
+            document.getElementById('bewerkKleedlokaal').value = this.dataset.kleedlokaal;
+            document.getElementById('bewerkModal').classList.add('open');
+        };
+    }
+
+    // annuleren-knoppen sluiten het schermpje
+    var sluitKnoppen = document.querySelectorAll('.sluit');
+    for (var j = 0; j < sluitKnoppen.length; j++) {
+        sluitKnoppen[j].onclick = function () {
+            this.closest('.modal').classList.remove('open');
+        };
+    }
+</script>
+
 </body>
-</html>     
+</html>
