@@ -1,51 +1,17 @@
 <?php
-
 class Teams
 {
-    private PDO $pdo;
+    private $conn;
 
-    public function __construct(PDO $pdo)
+    public function __construct($conn)
     {
-        $this->pdo = $pdo;
+        $this->conn = $conn;
     }
 
-    public function getTeams(): array
+    // alle teams ophalen
+    public function ophalen()
     {
-        return $this->pdo
-            ->query('SELECT id, naam, aantal_personen FROM teams ORDER BY naam')
-            ->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getTeam(int $id): ?array
-    {
-        $query = $this->pdo->prepare(
-            'SELECT id, naam, aantal_personen FROM teams WHERE id = :id'
-        );
-        $query->execute(['id' => $id]);
-        $team = $query->fetch(PDO::FETCH_ASSOC);
-
-        return $team ?: null;
-    }
-
-    public function saveTeam(?int $id, string $naam, int $aantalPersonen): bool
-    {
-        $sql = $id === null
-            ? 'INSERT INTO teams (naam, aantal_personen) VALUES (:naam, :aantal_personen)'
-            : 'UPDATE teams SET naam = :naam, aantal_personen = :aantal_personen WHERE id = :id';
-        $query = $this->pdo->prepare($sql);
-        $values = ['naam' => $naam, 'aantal_personen' => $aantalPersonen];
-
-        if ($id !== null) {
-            $values['id'] = $id;
-        }
-
-        return $query->execute($values);
-    }
-
-    public function deleteTeam(int $id): bool
-    {
-        $query = $this->pdo->prepare('DELETE FROM teams WHERE id = :id');
-
-        return $query->execute(['id' => $id]);
+        $stmt = $this->conn->query("SELECT * FROM basisteam ORDER BY editie_id, naam");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
