@@ -45,7 +45,6 @@ $edities = $teams->ophalenEdities();
 <body>
 <?php include __DIR__ . "/../Includes/Navigatie.php"; ?>
 
-<?php include '../Includes/Header.html'; ?>
 
 <h1>Teams</h1>
 

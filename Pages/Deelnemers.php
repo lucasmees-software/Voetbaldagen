@@ -49,7 +49,6 @@ $lijst = $deelnemers->ophalen();
 <body>
 <?php include __DIR__ . "/../Includes/Navigatie.php"; ?>
 
-<?php include '../Includes/Header.html'; ?>
 
 <h1><?= $bewerk ? 'Deelnemer aanpassen' : 'Deelnemer toevoegen' ?></h1>
 
