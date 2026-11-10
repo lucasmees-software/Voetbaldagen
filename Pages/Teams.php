@@ -43,6 +43,7 @@ $edities = $teams->ophalenEdities();
     <link rel="stylesheet" href="../Css/Stylesheet.css">
 </head>
 <body>
+<?php include __DIR__ . "/../Includes/Navigatie.php"; ?>
 
 <?php include '../Includes/Header.html'; ?>
 
