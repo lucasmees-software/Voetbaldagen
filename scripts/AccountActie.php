@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         session_destroy();
     } elseif ($actie === 'inloggen' || $actie === 'registreren') {
-        require_once __DIR__ . '/../Classes/Accounts.php';
+        require_once __DIR__ . '/../Classes/Account.php';
         $account = new Account();
         $email = tekstVeld($_POST, 'email');
         $wachtwoord = $_POST['wachtwoord'] ?? '';
