@@ -8,6 +8,7 @@ $toegestanePaginas = [
     '/voetbaldagen/Pages/Kaderleden.php',
     '/voetbaldagen/Pages/Teams.php',
     '/voetbaldagen/Pages/Wedstrijden.php',
+    '/voetbaldagen/Pages/Broodjes.php',
 ];
 $pad = is_string($terug) ? parse_url($terug, PHP_URL_PATH) : false;
 $query = is_string($terug) ? parse_url($terug, PHP_URL_QUERY) : false;
@@ -32,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         session_destroy();
     } elseif ($actie === 'inloggen' || $actie === 'registreren') {
-        require_once __DIR__ . '/../Classes/Account.php';
+        require_once __DIR__ . '/../Classes/Accounts.php';
         $account = new Account();
         $email = tekstVeld($_POST, 'email');
         $wachtwoord = $_POST['wachtwoord'] ?? '';

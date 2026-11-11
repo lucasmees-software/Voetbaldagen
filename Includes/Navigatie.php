@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/Beveiliging.php';
+
 // Pagina waar je nu op zit
 $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
 
@@ -15,7 +17,7 @@ $links = [
 ];
 
 // ingelogd of niet
-$ingelogd = isset($_SESSION['account_id']);
+$ingelogd = !empty($_SESSION['account_id']);
 
 // foutmelding en welk schermpje open moet na een mislukte poging
 $fout = $_SESSION['account_fout'] ?? '';
@@ -42,8 +44,14 @@ $actieUrl = $base . 'scripts/AccountActie.php';
         <div class="nav-account">
             <?php if ($ingelogd): ?>
                 <button type="button" onclick="accountOpen('accountModal')">
-                    <?= htmlspecialchars($_SESSION['account_email']) ?>
+                    <?= h($_SESSION['account_email'] ?? '') ?>
                 </button>
+                <form class="nav-logout" method="post" action="<?= h($actieUrl) ?>">
+                    <?php csrfVeld(); ?>
+                    <input type="hidden" name="actie" value="uitloggen">
+                    <input type="hidden" name="terug" value="<?= h($_SERVER['REQUEST_URI'] ?? $base . 'Index.php') ?>">
+                    <button type="submit">Uitloggen</button>
+                </form>
             <?php else: ?>
                 <button type="button" onclick="accountOpen('loginModal')">Inloggen</button>
                 <button type="button" onclick="accountOpen('registreerModal')">Registreren</button>
@@ -60,15 +68,9 @@ $actieUrl = $base . 'scripts/AccountActie.php';
         <div class="modal-inhoud">
             <h2>Mijn account</h2>
 
-            <p><strong>E-mail:</strong> <?= htmlspecialchars($_SESSION['account_email']) ?></p>
-            <p><strong>Rol:</strong> <?= htmlspecialchars($_SESSION['account_rol']) ?></p>
-
-            <form method="post" action="<?= $actieUrl ?>">
-                <input type="hidden" name="actie" value="uitloggen">
-                <input type="hidden" name="terug" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
-                <button type="submit">Uitloggen</button>
-                <button type="button" onclick="accountSluit('accountModal')">Sluiten</button>
-            </form>
+            <p><strong>E-mail:</strong> <?= h($_SESSION['account_email'] ?? '') ?></p>
+            <p><strong>Rol:</strong> <?= h($_SESSION['account_rol'] ?? '') ?></p>
+            <button type="button" onclick="accountSluit('accountModal')">Sluiten</button>
         </div>
     </div>
 
@@ -80,12 +82,13 @@ $actieUrl = $base . 'scripts/AccountActie.php';
             <h2>Inloggen</h2>
 
             <?php if ($fout != "" && $openModal == 'inloggen'): ?>
-                <p class="fout"><?= htmlspecialchars($fout) ?></p>
+                <p class="fout"><?= h($fout) ?></p>
             <?php endif; ?>
 
-            <form method="post" action="<?= $actieUrl ?>">
+            <form method="post" action="<?= h($actieUrl) ?>">
+                <?php csrfVeld(); ?>
                 <input type="hidden" name="actie" value="inloggen">
-                <input type="hidden" name="terug" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+                <input type="hidden" name="terug" value="<?= h($_SERVER['REQUEST_URI'] ?? $base . 'Index.php') ?>">
 
                 <label>E-mail</label>
                 <input type="email" name="email" required>
@@ -109,12 +112,13 @@ $actieUrl = $base . 'scripts/AccountActie.php';
             <h2>Account maken</h2>
 
             <?php if ($fout != "" && $openModal == 'registreren'): ?>
-                <p class="fout"><?= htmlspecialchars($fout) ?></p>
+                <p class="fout"><?= h($fout) ?></p>
             <?php endif; ?>
 
-            <form method="post" action="<?= $actieUrl ?>">
+            <form method="post" action="<?= h($actieUrl) ?>">
+                <?php csrfVeld(); ?>
                 <input type="hidden" name="actie" value="registreren">
-                <input type="hidden" name="terug" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+                <input type="hidden" name="terug" value="<?= h($_SERVER['REQUEST_URI'] ?? $base . 'Index.php') ?>">
 
                 <label>E-mail</label>
                 <input type="email" name="email" required>
@@ -151,7 +155,12 @@ $actieUrl = $base . 'scripts/AccountActie.php';
 <style>
 /* account rechtsboven */
 .nav-account {
-  display:flex ;
+    display: flex;
+    align-items: center;
+}
+.nav-account .nav-logout {
+    width: auto;
+    margin: 0;
 }
 .nav-account button {
     padding: 5px 10px;

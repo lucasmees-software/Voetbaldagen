@@ -1,6 +1,6 @@
 <?php
 global $pdo;
-session_start();
+require_once __DIR__ . '/../Includes/Beveiliging.php';
 
 require_once __DIR__ . '/../Classes/Broodjes.php';
 
