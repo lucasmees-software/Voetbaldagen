@@ -1,15 +1,15 @@
 <?php
 class Teams
 {
-    private $conn;
+    private PDO $conn;
 
-    public function __construct($conn)
+    public function __construct(PDO $conn)
     {
         $this->conn = $conn;
     }
 
     // alle teams ophalen, met de naam van de editie erbij
-    public function ophalen()
+    public function ophalen(): array
     {
         $sql = "SELECT basisteam.*, editie.naam AS editie_naam
                 FROM basisteam
@@ -20,7 +20,7 @@ class Teams
     }
 
     // alle edities ophalen voor de dropdown
-    public function ophalenEdities()
+    public function ophalenEdities(): array
     {
         $stmt = $this->conn->query("SELECT editie_id, naam FROM editie ORDER BY editie_id");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -35,10 +35,10 @@ class Teams
         $stmt = $this->conn->prepare($sql);
 
         return $stmt->execute([
-            ':editie_id'   => $data['editie_id'],
-            ':naam'        => $data['naam'],
-            ':doel'        => $data['doel_aantal_deelnemers'],
-            ':kleedlokaal' => $data['kleedlokaal'] ?: null,
+            'editie_id'   => $data['editie_id'],
+            'naam'        => trim($data['naam'] ?? ''),
+            'doel'        => $data['doel_aantal_deelnemers'],
+            'kleedlokaal' => trim($data['kleedlokaal'] ?? '') ?: null,
         ]);
     }
 
@@ -53,11 +53,11 @@ class Teams
         $stmt = $this->conn->prepare($sql);
 
         return $stmt->execute([
-            ':editie_id'   => $data['editie_id'],
-            ':naam'        => $data['naam'],
-            ':doel'        => $data['doel_aantal_deelnemers'],
-            ':kleedlokaal' => $data['kleedlokaal'] ?: null,
-            ':id'          => $id,
+            'editie_id'   => $data['editie_id'],
+            'naam'        => trim($data['naam'] ?? ''),
+            'doel'        => $data['doel_aantal_deelnemers'],
+            'kleedlokaal' => trim($data['kleedlokaal'] ?? '') ?: null,
+            'id'          => $id,
         ]);
     }
 
@@ -65,6 +65,6 @@ class Teams
     public function verwijderen($id)
     {
         $stmt = $this->conn->prepare("DELETE FROM basisteam WHERE basisteam_id = :id");
-        return $stmt->execute([':id' => $id]);
+        return $stmt->execute(['id' => $id]);
     }
 }

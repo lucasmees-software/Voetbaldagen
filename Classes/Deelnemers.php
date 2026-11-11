@@ -1,17 +1,21 @@
 <?php
 class Deelnemers
 {
-    private $conn;
+    private PDO $conn;
 
-    public function __construct($conn)
+    public function __construct(PDO $conn)
     {
         $this->conn = $conn;
     }
 
     // alle deelnemers ophalen
-    public function ophalen()
+    public function ophalen(): array
     {
-        $stmt = $this->conn->query("SELECT * FROM deelnemer ORDER BY achternaam, roepnaam");
+        $stmt = $this->conn->query(
+            "SELECT deelnemer_id, roepnaam, voorvoegsel, achternaam, geboortedatum, woonplaats, telefoon
+             FROM deelnemer
+             ORDER BY achternaam, roepnaam"
+        );
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -19,7 +23,7 @@ class Deelnemers
     public function ophalenEen($id)
     {
         $stmt = $this->conn->prepare("SELECT * FROM deelnemer WHERE deelnemer_id = :id");
-        $stmt->execute([':id' => $id]);
+        $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -33,12 +37,12 @@ class Deelnemers
 
         // lege velden worden NULL
         return $stmt->execute([
-            ':roepnaam'      => $data['roepnaam'],
-            ':voorvoegsel'   => $data['voorvoegsel'] ?: null,
-            ':achternaam'    => $data['achternaam'],
-            ':geboortedatum' => $data['geboortedatum'] ?: null,
-            ':woonplaats'    => $data['woonplaats'] ?: null,
-            ':telefoon'      => $data['telefoon'] ?: null,
+            'roepnaam'      => trim($data['roepnaam'] ?? ''),
+            'voorvoegsel'   => trim($data['voorvoegsel'] ?? '') ?: null,
+            'achternaam'    => trim($data['achternaam'] ?? ''),
+            'geboortedatum' => empty($data['geboortedatum']) ? null : $data['geboortedatum'],
+            'woonplaats'    => trim($data['woonplaats'] ?? '') ?: null,
+            'telefoon'      => trim($data['telefoon'] ?? '') ?: null,
         ]);
     }
 
@@ -53,13 +57,13 @@ class Deelnemers
         $stmt = $this->conn->prepare($sql);
 
         return $stmt->execute([
-            ':roepnaam'      => $data['roepnaam'],
-            ':voorvoegsel'   => $data['voorvoegsel'] ?: null,
-            ':achternaam'    => $data['achternaam'],
-            ':geboortedatum' => $data['geboortedatum'] ?: null,
-            ':woonplaats'    => $data['woonplaats'] ?: null,
-            ':telefoon'      => $data['telefoon'] ?: null,
-            ':id'            => $id,
+            'roepnaam'      => trim($data['roepnaam'] ?? ''),
+            'voorvoegsel'   => trim($data['voorvoegsel'] ?? '') ?: null,
+            'achternaam'    => trim($data['achternaam'] ?? ''),
+            'geboortedatum' => empty($data['geboortedatum']) ? null : $data['geboortedatum'],
+            'woonplaats'    => trim($data['woonplaats'] ?? '') ?: null,
+            'telefoon'      => trim($data['telefoon'] ?? '') ?: null,
+            'id'            => $id,
         ]);
     }
 
@@ -67,6 +71,6 @@ class Deelnemers
     public function verwijderen($id)
     {
         $stmt = $this->conn->prepare("DELETE FROM deelnemer WHERE deelnemer_id = :id");
-        return $stmt->execute([':id' => $id]);
+        return $stmt->execute(['id' => $id]);
     }
 }

@@ -1,82 +1,40 @@
 <?php
-require_once '../Classes/Deelnemers.php';
+require_once __DIR__ . '/../Includes/Beveiliging.php';
+require_once __DIR__ . '/../Database/Connection.php';
+require_once __DIR__ . '/../Classes/Kaderleden.php';
 
-// conn
-$conn = new PDO('mysql:host=localhost;dbname=voetbaldagen_horst', 'root', '');
-$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-$deelnemers = new Deelnemers($conn);
-
-// formulier verwerken en daarna de pagina opnieuw laden
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $deelnemers->toevoegen($_POST);
-    header('Location: Deelnemers.php');
-    exit;
-}
-
-$lijst = $deelnemers->ophalen();
+$kaderleden = (new Kaderleden())->getKaderleden($pdo);
 ?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Deelnemers</title>
+    <title>Kaderleden</title>
     <link rel="stylesheet" href="../Css/Stylesheet.css">
 </head>
 <body>
-<?php include __DIR__ . "/../Includes/Navigatie.php"; ?>
+<?php include __DIR__ . '/../Includes/Navigatie.php'; ?>
 
-<h1>Deelnemers</h1>
-
-<p class="midden">
-    <button type="button" onclick="document.getElementById('popup').showModal()">Deelnemer toevoegen</button>
-</p>
-
-<!-- lijst met deelnemers -->
-<table>
-    <tr>
-        <th>Naam</th>
-        <th>Geboortedatum</th>
-        <th>Woonplaats</th>
-        <th>Telefoon</th>
-    </tr>
-    <?php foreach ($lijst as $d): ?>
-        <tr>
-            <td><?= htmlspecialchars($d['roepnaam'] . ' ' . $d['voorvoegsel'] . ' ' . $d['achternaam']) ?></td>
-            <td><?= htmlspecialchars($d['geboortedatum'] ?? '') ?></td>
-            <td><?= htmlspecialchars($d['woonplaats'] ?? '') ?></td>
-            <td><?= htmlspecialchars($d['telefoon'] ?? '') ?></td>
-        </tr>
-    <?php endforeach; ?>
-</table>
-
-<!-- het schermpje -->
-<dialog id="popup">
-    <h2>Deelnemer toevoegen</h2>
-
-    <form method="post">
-        <label>Roepnaam *</label>
-        <input type="text" name="roepnaam" required>
-
-        <label>Voorvoegsel</label>
-        <input type="text" name="voorvoegsel">
-
-        <label>Achternaam *</label>
-        <input type="text" name="achternaam" required>
-
-        <label>Geboortedatum</label>
-        <input type="date" name="geboortedatum">
-
-        <label>Woonplaats</label>
-        <input type="text" name="woonplaats">
-
-        <label>Telefoon</label>
-        <input type="text" name="telefoon">
-
-        <button type="submit">Opslaan</button>
-        <button type="button" onclick="document.getElementById('popup').close()">Annuleren</button>
-    </form>
-</dialog>
-
+<main>
+    <h1>Kaderleden</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Naam</th>
+                <th>E-mail</th>
+                <th>Telefoon</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($kaderleden as $kaderlid): ?>
+            <tr>
+                <td><?= h($kaderlid['voornaam'] . ' ' . $kaderlid['achternaam']) ?></td>
+                <td><?= h($kaderlid['email'] ?? '') ?></td>
+                <td><?= h($kaderlid['telefoon'] ?? '') ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</main>
 </body>
 </html>
