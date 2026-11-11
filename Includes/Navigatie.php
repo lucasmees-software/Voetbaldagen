@@ -11,6 +11,7 @@ $links = [
     'Teams.php'       => 'Teams',
     'Wedstrijden.php' => 'Wedstrijden',
     'Kaderleden.php'  => 'Kaderleden',
+    'Broodjes.php'    => 'Broodjes',
 ];
 
 // ingelogd of niet
