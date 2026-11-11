@@ -1,10 +1,11 @@
 <?php
+global $pdo;
 session_start();
 
 require_once __DIR__ . '/../Classes/Broodjes.php';
 
 try {
-    require_once __DIR__ . '/../Database/TeamsConnection.php';
+    require_once __DIR__ . '/../Database/BroodjesData.php';
     $broodjesClass = new Broodjes($pdo);
 } catch (PDOException $exception) {
     $broodjesClass = null;
