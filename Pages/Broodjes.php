@@ -169,3 +169,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <button type="submit" class="btn btn-primary">Opslaan</button>
 </form>
+
+<h2 class="mt-5">Alle bestellingen</h2>
+
+<?php
+// Lees de bestellingen uit het CSV-bestand
+$bestand = __DIR__ . '/../data/bestellingen.csv';
+$bestellingen = [];
+
+if (file_exists($bestand)) {
+    $f = fopen($bestand, 'r');
+    fgetcsv($f); // kopregel overslaan
+    while (($rij = fgetcsv($f)) !== false) {
+        $bestellingen[] = $rij;
+    }
+    fclose($f);
+}
+?>
+
+<?php if (count($bestellingen) == 0) { ?>
+    <p>Er zijn nog geen bestellingen.</p>
+<?php } else { ?>
+    <table class="table table-bordered table-striped" border="1" cellpadding="6">
+        <tr>
+            <th>Deelnemer</th>
+            <th>Moment</th>
+            <th>Broodje 1</th>
+            <th>Broodje 2</th>
+            <th>Krentenbol</th>
+            <th>Snack</th>
+        </tr>
+
+        <?php foreach ($bestellingen as $rij) { ?>
+        <tr>
+            <!-- $rij: 0 = id, 1 = naam, 2 = moment, 3 = broodje1, 4 = broodje2, 5 = krentenbol, 6 = snack -->
+            <td><?= htmlspecialchars($rij[1]) ?></td>
+            <td><?= htmlspecialchars($momenten[$rij[2]] ?? $rij[2]) ?></td>
+            <td><?= htmlspecialchars(ucfirst($rij[3])) ?></td>
+            <td><?= $rij[4] != '' ? htmlspecialchars(ucfirst($rij[4])) : '-' ?></td>
+            <td><?= $rij[5] == 1 ? 'Ja' : 'Nee' ?></td>
+            <td><?= $rij[6] != 'geen' ? htmlspecialchars(ucfirst($rij[6])) : '-' ?></td>
+        </tr>
+        <?php } ?>
+    </table>
+<?php } ?>
