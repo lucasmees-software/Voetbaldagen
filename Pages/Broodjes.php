@@ -100,7 +100,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../Css/Stylesheet.css">
+    <title>broodjes</title>
+</head>
+<?php include('../Includes/Navigatie.php') ?>
 <h1>Broodjes bestellen</h1>
 
 <?php if ($melding != '') { ?>
