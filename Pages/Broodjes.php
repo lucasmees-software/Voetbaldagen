@@ -1,209 +1,171 @@
 <?php
-global $pdo;
+// Login/beveiliging (laat weg als deze regel een fout geeft)
 require_once __DIR__ . '/../Includes/Beveiliging.php';
 
-require_once __DIR__ . '/../Classes/Broodjes.php';
+// Database-verbinding, alleen om de deelnemers op te halen ($pdo)
+require_once __DIR__ . '/../Database/Connection.php';
 
-try {
-    require_once __DIR__ . '/../Database/BroodjesData.php';
-    $broodjesClass = new Broodjes($pdo);
-} catch (PDOException $exception) {
-    $broodjesClass = null;
+// De 3 bestelmomenten en de toegestane broodjes
+$momenten = [
+    'maandag_dinsdag' => 'Maandag + dinsdag',
+    'woensdag_donderdag' => 'Woensdag + donderdag',
+    'vrijdag' => 'Vrijdag',
+];
+$broodjes = ['hagelslag', 'kaas', 'vlees'];
+
+// Haal alle deelnemers op uit de database en maak een lijstje: id => naam
+$deelnemers = [];
+$resultaat = $pdo->query("SELECT deelnemer_id, roepnaam, voorvoegsel, achternaam FROM deelnemer ORDER BY roepnaam");
+foreach ($resultaat as $d) {
+    // array_filter laat een leeg voorvoegsel (NULL) weg
+    $deelnemers[$d['deelnemer_id']] = implode(' ', array_filter([$d['roepnaam'], $d['voorvoegsel'], $d['achternaam']]));
 }
 
-$_SESSION['broodjes_csrf_token'] ??= bin2hex(random_bytes(32));
-$csrfToken = $_SESSION['broodjes_csrf_token'];
-$melding = $broodjesClass === null
-    ? 'De databaseverbinding is niet beschikbaar. Start MySQL en probeer opnieuw.'
-    : '';
-$naam = '';
-$weekStart = date('Y-m-d', strtotime('monday this week'));
-$keuzes = [];
-$vrijdagKeuze = '';
+$melding = '';
+$gekozen = $_POST['deelnemer_id'] ?? ''; // zodat de keuze blijft staan na het opslaan
 
-function veilig($waarde): string
-{
-    return htmlspecialchars((string) $waarde, ENT_QUOTES, 'UTF-8');
-}
-
-function isMaandag(string $datum): bool
-{
-    $weekDatum = DateTimeImmutable::createFromFormat('!Y-m-d', $datum);
-
-    return $weekDatum !== false
-        && $weekDatum->format('Y-m-d') === $datum
-        && $weekDatum->format('N') === '1';
-}
-
+// Is het formulier verstuurd?
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $token = $_POST['csrf_token'] ?? '';
-    $naam = is_string($_POST['naam'] ?? null) ? trim($_POST['naam']) : '';
-    $postedWeek = $_POST['week_start'] ?? '';
-    $weekStart = is_string($postedWeek) ? $postedWeek : '';
-    $postedKeuzes = $_POST['broodjes'] ?? [];
-    $keuzes = is_array($postedKeuzes) ? $postedKeuzes : [];
-    $postedVrijdagKeuze = $_POST['vrijdag_keuze'] ?? '';
-    $vrijdagKeuze = is_string($postedVrijdagKeuze) ? $postedVrijdagKeuze : '';
 
-    if (!is_string($token) || !hash_equals($csrfToken, $token)) {
-        $melding = 'Ongeldige aanvraag. Vernieuw de pagina en probeer opnieuw.';
-    } elseif ($naam === '' || strlen($naam) > 100) {
-        $melding = 'Vul een naam in van maximaal 100 tekens.';
-    } elseif (!isMaandag($weekStart)) {
-        $melding = 'Kies de maandag waarop de week begint.';
-        $weekStart = date('Y-m-d', strtotime('monday this week'));
-    } else {
-        foreach (Broodjes::DAGEN as $dag => $label) {
-            if (!is_string($keuzes[$dag] ?? null) || !isset(Broodjes::KEUZES[$keuzes[$dag]])) {
-                $melding = 'Kies voor iedere dag een geldig broodje.';
-                break;
-            }
-        }
+    $nieuweBestellingen = [];
+    $fout = '';
 
-        if ($melding === '' && !isset(Broodjes::VRIJDAG_KEUZES[$vrijdagKeuze])) {
-            $melding = 'Kies voor vrijdag een kroket of frikandel.';
-        }
+    // Bestaat deze deelnemer echt in de database?
+    if (!isset($deelnemers[$gekozen])) {
+        $fout = 'Kies een deelnemer.';
     }
 
-    if ($melding === '') {
-        try {
-            $broodjesClass->slaWeekBestellingOp($naam, $weekStart, $keuzes, $vrijdagKeuze);
-            header('Location: Broodjes.php?week=' . urlencode($weekStart) . '&melding=opgeslagen');
-            exit;
-        } catch (PDOException $exception) {
-            $melding = 'De bestelling kon niet worden opgeslagen. Controleer of de broodjes-tabel is aangemaakt.';
+    // Loop langs de 3 momenten en controleer elk moment
+    foreach ($momenten as $moment => $naam) {
+        $broodje1 = $_POST['broodje1'][$moment] ?? '';
+        $broodje2 = $_POST['broodje2'][$moment] ?? '';
+        $snack = $_POST['snack'][$moment] ?? 'geen';
+        $krentenbol = isset($_POST['krentenbol'][$moment]) ? 1 : 0;
+
+        if (!in_array($broodje1, $broodjes)) {
+            $fout = 'Kies een geldig broodje bij ' . $naam . '.';
+        } elseif ($moment != 'vrijdag' && !in_array($broodje2, $broodjes)) {
+            $fout = 'Kies een geldig tweede broodje bij ' . $naam . '.';
+        } elseif ($moment == 'vrijdag' && $snack != 'kroket' && $snack != 'frikandel') {
+            $fout = 'Kies op vrijdag een kroket of frikandel.';
         }
-    }
-} else {
-    $postedWeek = $_GET['week'] ?? '';
-    if (is_string($postedWeek) && $postedWeek !== '') {
-        if (isMaandag($postedWeek)) {
-            $weekStart = $postedWeek;
+
+        if ($moment == 'vrijdag') {
+            // Vrijdag: geen broodje 2 en geen krentenbol
+            $broodje2 = '';
+            $krentenbol = 0;
         } else {
-            $melding = 'Kies de maandag waarop de week begint.';
+            // Andere dagen: geen snack
+            $snack = 'geen';
         }
+
+        $nieuweBestellingen[] = [$gekozen, $deelnemers[$gekozen] ?? '', $moment, $broodje1, $broodje2, $krentenbol, $snack];
     }
 
-    if ($melding === '' && ($_GET['melding'] ?? '') === 'opgeslagen') {
-        $melding = 'Bestelling opgeslagen.';
-    }
-}
+    // Alleen opslaan als alles klopt
+    if ($fout == '') {
+        $map = __DIR__ . '/../data';
+        if (!is_dir($map)) {
+            mkdir($map);
+        }
+        $bestand = $map . '/bestellingen.csv';
 
-if ($broodjesClass === null) {
-    $bestellingen = [];
-} else {
-    try {
-        $bestellingen = $broodjesClass->getBestellingenVoorWeek($weekStart);
-    } catch (PDOException $exception) {
-        $bestellingen = [];
-        $melding = 'De bestellingen konden niet worden geladen. Controleer of de broodjes-tabel is aangemaakt.';
+        // Lees de bestellingen van andere deelnemers (die willen we bewaren)
+        $bewaren = [];
+        if (file_exists($bestand)) {
+            $f = fopen($bestand, 'r');
+            fgetcsv($f); // kopregel overslaan
+            while (($rij = fgetcsv($f)) !== false) {
+                if ($rij[0] != $gekozen) {
+                    $bewaren[] = $rij;
+                }
+            }
+            fclose($f);
+        }
+
+        // Schrijf alles opnieuw weg: kopregel, de anderen, en de nieuwe bestelling
+        $f = fopen($bestand, 'w');
+        fputcsv($f, ['deelnemer_id', 'naam', 'moment', 'broodje1', 'broodje2', 'krentenbol', 'snack']);
+        foreach ($bewaren as $rij) {
+            fputcsv($f, $rij);
+        }
+        foreach ($nieuweBestellingen as $rij) {
+            fputcsv($f, $rij);
+        }
+        fclose($f);
+
+        $melding = 'Bestelling opgeslagen voor ' . $deelnemers[$gekozen] . '!';
+    } else {
+        $melding = $fout;
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../Css/Stylesheet.css">
-    <title>Broodjes</title>
-</head>
-<body>
-<?php include __DIR__ . '/../Includes/Navigatie.php'; ?>
 
-<main>
-    <h1>Broodjes bestellen</h1>
+<h1>Broodjes bestellen</h1>
 
-    <?php if ($melding !== ''): ?>
-        <p role="status"><?= veilig($melding) ?></p>
-    <?php endif; ?>
+<?php if ($melding != '') { ?>
+    <!-- htmlspecialchars zorgt dat er geen gekke code in de pagina kan komen -->
+    <p><?= htmlspecialchars($melding) ?></p>
+<?php } ?>
 
-    <form method="get" action="Broodjes.php">
-        <label for="week">Week vanaf maandag</label>
-        <input id="week" name="week" type="date" value="<?= veilig($weekStart) ?>" required>
-        <button type="submit">Week bekijken</button>
-    </form>
+<form method="post">
 
-    <h2>Bestelling invullen</h2>
-    <form method="post" action="Broodjes.php">
-        <input type="hidden" name="csrf_token" value="<?= veilig($csrfToken) ?>">
-        <label for="naam">Naam</label>
-        <input id="naam" name="naam" type="text" maxlength="100" value="<?= veilig($naam) ?>" required>
-        <label for="week_start">Week vanaf maandag</label>
-        <input id="week_start" name="week_start" type="date" value="<?= veilig($weekStart) ?>" required>
+    <label>Deelnemer</label>
+    <select name="deelnemer_id" class="form-select mb-3">
+        <option value="">-- Kies een deelnemer --</option>
+        <?php foreach ($deelnemers as $id => $naam) { ?>
+            <option value="<?= $id ?>" <?= ($gekozen == $id) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($naam) ?>
+            </option>
+        <?php } ?>
+    </select>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Dag</th>
-                    <th>Broodje</th>
-                    <th>Extra op vrijdag</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach (Broodjes::DAGEN as $dag => $label): ?>
-                    <tr>
-                        <td><?= veilig($label) ?></td>
-                        <td>
-                            <select name="broodjes[<?= veilig($dag) ?>]" aria-label="Broodje voor <?= veilig($label) ?>" required>
-                                <option value="">Kies een broodje</option>
-                                <?php foreach (Broodjes::KEUZES as $waarde => $keuzeLabel): ?>
-                                    <option value="<?= veilig($waarde) ?>"<?= ($keuzes[$dag] ?? '') === $waarde ? ' selected' : '' ?>>
-                                        <?= veilig($keuzeLabel) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <?php if ($dag === 'vrijdag'): ?>
-                                <select name="vrijdag_keuze" aria-label="Kroket of frikandel op vrijdag" required>
-                                    <option value="">Kies kroket of frikandel</option>
-                                    <?php foreach (Broodjes::VRIJDAG_KEUZES as $waarde => $keuzeLabel): ?>
-                                        <option value="<?= veilig($waarde) ?>"<?= $vrijdagKeuze === $waarde ? ' selected' : '' ?>>
-                                            <?= veilig($keuzeLabel) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            <?php else: ?>
-                                -
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <button type="submit">Bestelling opslaan</button>
-    </form>
+    <table class="table table-bordered align-middle">
+        <tr>
+            <th>Moment</th>
+            <th>Broodje 1</th>
+            <th>Broodje 2</th>
+            <th>Krentenbol</th>
+            <th>Snack</th>
+        </tr>
 
-    <h2>Bestellingen voor de week van <?= veilig($weekStart) ?></h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Naam</th>
-                <?php foreach (Broodjes::DAGEN as $label): ?>
-                    <th><?= veilig($label) ?></th>
-                <?php endforeach; ?>
-                <th>Vrijdag extra</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if ($bestellingen): ?>
-                <?php foreach ($bestellingen as $bestelNaam => $bestelling): ?>
-                    <tr>
-                        <td><?= veilig($bestelNaam) ?></td>
-                        <?php foreach (Broodjes::DAGEN as $dag => $label): ?>
-                            <td><?= veilig(Broodjes::KEUZES[$bestelling['broodjes'][$dag] ?? ''] ?? '-') ?></td>
-                        <?php endforeach; ?>
-                        <td><?= veilig(Broodjes::VRIJDAG_KEUZES[$bestelling['vrijdag_keuze'] ?? ''] ?? '-') ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="7">Er zijn nog geen bestellingen voor deze week.</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
+        <?php foreach ($momenten as $moment => $naam) { ?>
+        <tr>
+            <td><?= $naam ?></td>
+
+            <td>
+                <select name="broodje1[<?= $moment ?>]" class="form-select">
+                    <?php foreach ($broodjes as $b) { ?>
+                        <option value="<?= $b ?>"><?= ucfirst($b) ?></option>
+                    <?php } ?>
+                </select>
+            </td>
+
+            <?php if ($moment != 'vrijdag') { ?>
+                <!-- Maandag en woensdag: broodje 2 en krentenbol, geen snack -->
+                <td>
+                    <select name="broodje2[<?= $moment ?>]" class="form-select">
+                        <?php foreach ($broodjes as $b) { ?>
+                            <option value="<?= $b ?>"><?= ucfirst($b) ?></option>
+                        <?php } ?>
+                    </select>
+                </td>
+                <td><input type="checkbox" name="krentenbol[<?= $moment ?>]"></td>
+                <td>-</td>
+            <?php } else { ?>
+                <!-- Vrijdag: geen broodje 2 en geen krentenbol, wel een snack -->
+                <td>-</td>
+                <td>-</td>
+                <td>
+                    <select name="snack[<?= $moment ?>]" class="form-select">
+                        <option value="kroket">Kroket</option>
+                        <option value="frikandel">Frikandel</option>
+                    </select>
+                </td>
+            <?php } ?>
+        </tr>
+        <?php } ?>
     </table>
-</main>
-</body>
-</html>
+
+    <button type="submit" class="btn btn-primary">Opslaan</button>
+</form>
