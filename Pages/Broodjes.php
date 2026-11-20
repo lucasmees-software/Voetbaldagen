@@ -13,12 +13,6 @@ $momenten = [
 ];
 $broodjes = ['hagelslag', 'kaas', 'vlees'];
 
-// Welk moment is gekozen? Komt uit de url (?moment=...), anders het eerste
-$moment = $_GET['moment'] ?? 'maandag_dinsdag';
-if (!isset($momenten[$moment])) {
-    $moment = 'maandag_dinsdag';
-}
-
 // Haal alle deelnemers op uit de database: id => naam
 $deelnemers = [];
 $resultaat = $pdo->query("SELECT deelnemer_id, roepnaam, voorvoegsel, achternaam FROM deelnemer ORDER BY roepnaam");
@@ -37,42 +31,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nieuw = [];
     $fout = '';
 
-    // Loop langs alle deelnemers
+    // Loop langs alle deelnemers en alle momenten
     foreach ($deelnemers as $id => $naam) {
-        $b1 = $_POST['broodje1'][$id] ?? '';
+        foreach ($momenten as $moment => $momentNaam) {
 
-        // Geen broodje gekozen = deze deelnemer bestelt niets
-        if ($b1 == '') {
-            continue;
-        }
+            $b1 = $_POST['broodje1'][$moment][$id] ?? '';
 
-        $b2 = $_POST['broodje2'][$id] ?? '';
-        $snack = $_POST['snack'][$id] ?? 'geen';
-        $krentenbol = isset($_POST['krentenbol'][$id]) ? 1 : 0;
-
-        if (!in_array($b1, $broodjes)) {
-            $fout = 'Ongeldig broodje bij ' . $naam . '.';
-            continue;
-        }
-
-        if ($moment == 'vrijdag') {
-            // Vrijdag: geen broodje 2 en geen krentenbol, wel een snack
-            $b2 = '';
-            $krentenbol = 0;
-            if ($snack != 'kroket' && $snack != 'frikandel') {
-                $fout = 'Kies een snack bij ' . $naam . '.';
+            // Geen broodje gekozen = niets besteld voor dit moment
+            if ($b1 == '') {
                 continue;
             }
-        } else {
-            // Andere dagen: broodje 2 verplicht, geen snack
-            if (!in_array($b2, $broodjes)) {
-                $fout = 'Kies een tweede broodje bij ' . $naam . '.';
+
+            $b2 = $_POST['broodje2'][$moment][$id] ?? '';
+            $snack = $_POST['snack'][$moment][$id] ?? 'geen';
+            $krentenbol = isset($_POST['krentenbol'][$moment][$id]) ? 1 : 0;
+
+            if (!in_array($b1, $broodjes)) {
+                $fout = 'Ongeldig broodje bij ' . $naam . ' (' . $momentNaam . ').';
                 continue;
             }
-            $snack = 'geen';
-        }
 
-        $nieuw[] = [$id, $naam, $moment, $b1, $b2, $krentenbol, $snack];
+            if ($moment == 'vrijdag') {
+                // Vrijdag: geen broodje 2 en geen krentenbol, wel een snack
+                $b2 = '';
+                $krentenbol = 0;
+                if ($snack != 'kroket' && $snack != 'frikandel') {
+                    $fout = 'Kies een snack bij ' . $naam . '.';
+                    continue;
+                }
+            } else {
+                // Andere momenten: broodje 2 verplicht, geen snack
+                if (!in_array($b2, $broodjes)) {
+                    $fout = 'Kies een tweede broodje bij ' . $naam . ' (' . $momentNaam . ').';
+                    continue;
+                }
+                $snack = 'geen';
+            }
+
+            $nieuw[] = [$id, $naam, $moment, $b1, $b2, $krentenbol, $snack];
+        }
     }
 
     // Alleen opslaan als alles klopt
@@ -81,94 +78,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mkdir($map);
         }
 
-        // Bewaar de bestellingen van de andere momenten
-        $bewaren = [];
-        if (file_exists($bestand)) {
-            $f = fopen($bestand, 'r');
-            fgetcsv($f); // kopregel overslaan
-            while (($rij = fgetcsv($f)) !== false) {
-                if ($rij[2] != $moment) {
-                    $bewaren[] = $rij;
-                }
-            }
-            fclose($f);
-        }
-
-        // Schrijf alles weg: kopregel, de andere momenten, en dit moment
+        // Schrijf alles weg: kopregel + alle bestellingen
         $f = fopen($bestand, 'w');
         fputcsv($f, ['deelnemer_id', 'naam', 'moment', 'broodje1', 'broodje2', 'krentenbol', 'snack']);
-        foreach ($bewaren as $rij) {
-            fputcsv($f, $rij);
-        }
         foreach ($nieuw as $rij) {
             fputcsv($f, $rij);
         }
         fclose($f);
 
-        $melding = 'Opgeslagen voor ' . $momenten[$moment] . '!';
+        $melding = 'Opgeslagen!';
     } else {
         $melding = $fout;
     }
 }
 
-// Lees wat er al is opgeslagen voor dit moment (zodat het ingevuld staat in de tabel)
+// Lees wat er is opgeslagen (zodat het ingevuld staat in de tabel)
 $opgeslagen = [];
 if (file_exists($bestand)) {
     $f = fopen($bestand, 'r');
     fgetcsv($f); // kopregel overslaan
     while (($rij = fgetcsv($f)) !== false) {
-        if ($rij[2] == $moment) {
-            $opgeslagen[$rij[0]] = [
-                'broodje1' => $rij[3],
-                'broodje2' => $rij[4],
-                'krentenbol' => $rij[5],
-                'snack' => $rij[6],
-            ];
-        }
+        $opgeslagen[$rij[2]][$rij[0]] = [
+            'broodje1' => $rij[3],
+            'broodje2' => $rij[4],
+            'krentenbol' => $rij[5],
+            'snack' => $rij[6],
+        ];
     }
     fclose($f);
 }
 ?>
 
+<?php include('../Includes/Navigatie.php')?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="../Css/Stylesheet.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>broodje bestellen</title>
+</head>
+</html>
+
 <h1>Broodjes bestellen</h1>
 
-<!-- Knoppen om het moment te kiezen -->
-<p>
-    <?php foreach ($momenten as $sleutel => $naam) { ?>
-        <a href="?moment=<?= $sleutel ?>" class="btn <?= $sleutel == $moment ? 'btn-primary' : 'btn-outline-primary' ?>">
-            <?= $naam ?>
-        </a>
-    <?php } ?>
-</p>
-
-<?php if ($melding != '') { ?>
-    <!-- htmlspecialchars zorgt dat er geen gekke code in de pagina kan komen -->
-    <p><strong><?= htmlspecialchars($melding) ?></strong></p>
-<?php } ?>
-
-<form method="post" action="?moment=<?= $moment ?>">
-    <table class="table table-bordered table-striped align-middle" border="1" cellpadding="6">
+<form method="post">
+    <table class="table table-bordered align-middle" border="1" cellpadding="6">
         <tr>
             <th>Deelnemer</th>
-            <?php if ($moment != 'vrijdag') { ?>
-                <th>Broodje 1</th>
-                <th>Broodje 2</th>
-                <th>Krentenbol</th>
-            <?php } else { ?>
-                <th>Broodje</th>
-                <th>Snack</th>
-            <?php } ?>
+            <th>Moment</th>
+            <th>Broodje 1</th>
+            <th>Broodje 2</th>
+            <th>Krentenbol</th>
+            <th>Snack</th>
         </tr>
 
         <?php foreach ($deelnemers as $id => $naam) {
-            // Wat had deze deelnemer al gekozen?
-            $o = $opgeslagen[$id] ?? ['broodje1' => '', 'broodje2' => '', 'krentenbol' => 0, 'snack' => 'kroket'];
+            $eerste = true; // om de naam maar 1 keer te tonen
+            foreach ($momenten as $moment => $momentNaam) {
+                // Wat had deze deelnemer al gekozen voor dit moment?
+                $o = $opgeslagen[$moment][$id] ?? ['broodje1' => '', 'broodje2' => '', 'krentenbol' => 0, 'snack' => 'kroket'];
         ?>
         <tr>
-            <td><?= htmlspecialchars($naam) ?></td>
+            <?php if ($eerste) { ?>
+                <!-- De naam staat over 3 rijen (een per moment) -->
+                <td rowspan="<?= count($momenten) ?>"><strong><?= htmlspecialchars($naam) ?></strong></td>
+                <?php $eerste = false; ?>
+            <?php } ?>
 
+            <!-- Kolom Moment -->
+            <td><?= $momentNaam ?></td>
+
+            <!-- Broodje 1 (bij alle momenten) -->
             <td>
-                <select name="broodje1[<?= $id ?>]" class="form-select">
+                <select name="broodje1[<?= $moment ?>][<?= $id ?>]" class="form-select">
                     <option value="">-</option>
                     <?php foreach ($broodjes as $b) { ?>
                         <option value="<?= $b ?>" <?= $o['broodje1'] == $b ? 'selected' : '' ?>><?= ucfirst($b) ?></option>
@@ -177,8 +161,9 @@ if (file_exists($bestand)) {
             </td>
 
             <?php if ($moment != 'vrijdag') { ?>
+                <!-- Maandag en woensdag: broodje 2 en krentenbol, geen snack -->
                 <td>
-                    <select name="broodje2[<?= $id ?>]" class="form-select">
+                    <select name="broodje2[<?= $moment ?>][<?= $id ?>]" class="form-select">
                         <option value="">-</option>
                         <?php foreach ($broodjes as $b) { ?>
                             <option value="<?= $b ?>" <?= $o['broodje2'] == $b ? 'selected' : '' ?>><?= ucfirst($b) ?></option>
@@ -186,18 +171,24 @@ if (file_exists($bestand)) {
                     </select>
                 </td>
                 <td>
-                    <input type="checkbox" name="krentenbol[<?= $id ?>]" <?= $o['krentenbol'] == 1 ? 'checked' : '' ?>>
+                    <input type="checkbox" name="krentenbol[<?= $moment ?>][<?= $id ?>]" <?= $o['krentenbol'] == 1 ? 'checked' : '' ?>>
                 </td>
+                <td>-</td>
             <?php } else { ?>
+                <!-- Vrijdag: geen broodje 2 en geen krentenbol, wel een snack -->
+                <td>-</td>
+                <td>-</td>
                 <td>
-                    <select name="snack[<?= $id ?>]" class="form-select">
+                    <select name="snack[<?= $moment ?>][<?= $id ?>]" class="form-select">
                         <option value="kroket" <?= $o['snack'] == 'kroket' ? 'selected' : '' ?>>Kroket</option>
                         <option value="frikandel" <?= $o['snack'] == 'frikandel' ? 'selected' : '' ?>>Frikandel</option>
                     </select>
                 </td>
             <?php } ?>
         </tr>
-        <?php } ?>
+        <?php
+            }
+        } ?>
     </table>
 
     <button type="submit" class="btn btn-primary">Opslaan</button>
