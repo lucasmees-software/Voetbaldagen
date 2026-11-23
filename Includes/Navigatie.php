@@ -14,6 +14,7 @@ $links = [
     'Wedstrijden.php' => 'Wedstrijden',
     'Kaderleden.php'  => 'Kaderleden',
     'Broodjes.php'    => 'Broodjes',
+    'Inschrijven.php' => 'Inschrijven'
 ];
 
 // ingelogd of niet
@@ -28,9 +29,7 @@ $actieUrl = $base . 'scripts/AccountActie.php';
 ?>
 <header class="site-header">
     <nav class="navbar">
-
         <a href="<?= $base ?>Index.php" class="nav-logo">Voetbaldagen Horst</a>
-
         <div class="nav-links">
             <?php foreach ($links as $file => $label): ?>
                 <a href="<?= $base ?><?= $file === 'Index.php' ? $file : 'Pages/' . $file ?>"
@@ -57,7 +56,6 @@ $actieUrl = $base . 'scripts/AccountActie.php';
                 <button type="button" onclick="accountOpen('registreerModal')">Registreren</button>
             <?php endif; ?>
         </div>
-
     </nav>
 </header>
 

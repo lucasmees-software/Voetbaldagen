@@ -13,7 +13,7 @@ $momenten = [
 ];
 $broodjes = ['hagelslag', 'kaas', 'vlees'];
 
-// Haal alle deelnemers op uit de database: id => naam
+// Haal alle deelnemers op uit de database id => naam
 $deelnemers = [];
 $resultaat = $pdo->query("SELECT deelnemer_id, roepnaam, voorvoegsel, achternaam FROM deelnemer ORDER BY roepnaam");
 foreach ($resultaat as $d) {
@@ -25,7 +25,7 @@ $map = __DIR__ . '/../data';
 $bestand = $map . '/bestellingen.csv';
 $melding = '';
 
-// Is het formulier verstuurd?
+// form opgeslagen ?
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $nieuw = [];
@@ -109,16 +109,18 @@ if (file_exists($bestand)) {
 }
 ?>
 
-<?php include('../Includes/Navigatie.php')?>
+<?php include('../Includes/Navigatie.php') ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link rel="stylesheet" href="../Css/Stylesheet.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>broodje bestellen</title>
 </head>
+
 </html>
 
 <h1>Broodjes bestellen</h1>
@@ -140,56 +142,55 @@ if (file_exists($bestand)) {
                 // Wat had deze deelnemer al gekozen voor dit moment?
                 $o = $opgeslagen[$moment][$id] ?? ['broodje1' => '', 'broodje2' => '', 'krentenbol' => 0, 'snack' => 'kroket'];
         ?>
-        <tr>
-            <?php if ($eerste) { ?>
-                <!-- De naam staat over 3 rijen (een per moment) -->
-                <td rowspan="<?= count($momenten) ?>"><strong><?= htmlspecialchars($naam) ?></strong></td>
-                <?php $eerste = false; ?>
-            <?php } ?>
-
-            <!-- Kolom Moment -->
-            <td><?= $momentNaam ?></td>
-
-            <!-- Broodje 1 (bij alle momenten) -->
-            <td>
-                <select name="broodje1[<?= $moment ?>][<?= $id ?>]" class="form-select">
-                    <option value="">-</option>
-                    <?php foreach ($broodjes as $b) { ?>
-                        <option value="<?= $b ?>" <?= $o['broodje1'] == $b ? 'selected' : '' ?>><?= ucfirst($b) ?></option>
+                <tr>
+                    <?php if ($eerste) { ?>
+                        <!-- De naam staat over 3 rijen (een per moment) -->
+                        <td rowspan="<?= count($momenten) ?>"><strong><?= htmlspecialchars($naam) ?></strong></td>
+                        <?php $eerste = false; ?>
                     <?php } ?>
-                </select>
-            </td>
 
-            <?php if ($moment != 'vrijdag') { ?>
-                <!-- Maandag en woensdag: broodje 2 en krentenbol, geen snack -->
-                <td>
-                    <select name="broodje2[<?= $moment ?>][<?= $id ?>]" class="form-select">
-                        <option value="">-</option>
-                        <?php foreach ($broodjes as $b) { ?>
-                            <option value="<?= $b ?>" <?= $o['broodje2'] == $b ? 'selected' : '' ?>><?= ucfirst($b) ?></option>
-                        <?php } ?>
-                    </select>
-                </td>
-                <td>
-                    <input type="checkbox" name="krentenbol[<?= $moment ?>][<?= $id ?>]" <?= $o['krentenbol'] == 1 ? 'checked' : '' ?>>
-                </td>
-                <td>-</td>
-            <?php } else { ?>
-                <!-- Vrijdag: geen broodje 2 en geen krentenbol, wel een snack -->
-                <td>-</td>
-                <td>-</td>
-                <td>
-                    <select name="snack[<?= $moment ?>][<?= $id ?>]" class="form-select">
-                        <option value="kroket" <?= $o['snack'] == 'kroket' ? 'selected' : '' ?>>Kroket</option>
-                        <option value="frikandel" <?= $o['snack'] == 'frikandel' ? 'selected' : '' ?>>Frikandel</option>
-                    </select>
-                </td>
-            <?php } ?>
-        </tr>
+                    <!-- Kolom Moment -->
+                    <td><?= $momentNaam ?></td>
+
+                    <!-- Broodje 1 (bij alle momenten) -->
+                    <td>
+                        <select name="broodje1[<?= $moment ?>][<?= $id ?>]" class="form-select">
+                            <option value="">-</option>
+                            <?php foreach ($broodjes as $b) { ?>
+                                <option value="<?= $b ?>" <?= $o['broodje1'] == $b ? 'selected' : '' ?>><?= ucfirst($b) ?></option>
+                            <?php } ?>
+                        </select>
+                    </td>
+
+                    <?php if ($moment != 'vrijdag') { ?>
+                        <!-- Maandag en woensdag: broodje 2 en krentenbol, geen snack -->
+                        <td>
+                            <select name="broodje2[<?= $moment ?>][<?= $id ?>]" class="form-select">
+                                <option value="">-</option>
+                                <?php foreach ($broodjes as $b) { ?>
+                                    <option value="<?= $b ?>" <?= $o['broodje2'] == $b ? 'selected' : '' ?>><?= ucfirst($b) ?></option>
+                                <?php } ?>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="krentenbol[<?= $moment ?>][<?= $id ?>]" <?= $o['krentenbol'] == 1 ? 'checked' : '' ?>>
+                        </td>
+                        <td>-</td>
+                    <?php } else { ?>
+                        <!-- Vrijdag: geen broodje 2 en geen krentenbol, wel een snack -->
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <select name="snack[<?= $moment ?>][<?= $id ?>]" class="form-select">
+                                <option value="kroket" <?= $o['snack'] == 'kroket' ? 'selected' : '' ?>>Kroket</option>
+                                <option value="frikandel" <?= $o['snack'] == 'frikandel' ? 'selected' : '' ?>>Frikandel</option>
+                            </select>
+                        </td>
+                    <?php } ?>
+                </tr>
         <?php
             }
         } ?>
     </table>
-
     <button type="submit" class="btn btn-primary">Opslaan</button>
 </form>
