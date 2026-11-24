@@ -33,7 +33,7 @@ $actieUrl = $base . 'scripts/AccountActie.php';
         <div class="nav-links">
             <?php foreach ($links as $file => $label): ?>
                 <a href="<?= $base ?><?= $file === 'Index.php' ? $file : 'Pages/' . $file ?>"
-                   class="<?= $currentPage === $file ? 'active' : '' ?>">
+                    class="<?= $currentPage === $file ? 'active' : '' ?>">
                     <?= htmlspecialchars($label) ?>
                 </a>
             <?php endforeach; ?>
@@ -151,36 +151,33 @@ $actieUrl = $base . 'scripts/AccountActie.php';
 </script>
 
 <style>
-/* account rechtsboven */
-.nav-account {
-    display: flex;
-    align-items: center;
-}
-.nav-account .nav-logout {
-    width: auto;
-    margin: 0;
-}
-.nav-account button {
-    padding: 5px 10px;
-    cursor: pointer;
-    margin-left: 18px;
+    .nav-account {
+        display: flex;
+        align-items: center;
+    }
 
-}
+    .nav-account .nav-logout {
+        width: auto;
+        margin: 0;
+    }
 
-/* foutmelding in het schermpje */
-.fout {
-    color: #b00020;
-}
+    .nav-account button {
+        padding: 5px 10px;
+        cursor: pointer;
+        margin-left: 18px;
+    }
 
-.wissel {
-    margin-bottom: 0;
-    font-size: 14px;
-}
+    /* foutmelding */
+    .fout {
+        color: #b00020;
+    }
 
-/* links in het schermpje niet wit (de nav a regel is alleen voor de navbar) */
-.modal-inhoud a {
-    color: #0645ad;
-}
+    .wissel {
+        margin-bottom: 0;
+        font-size: 14px;
+    }
 
-
+    .modal-inhoud a {
+        color: #0645ad;
+    }
 </style>
