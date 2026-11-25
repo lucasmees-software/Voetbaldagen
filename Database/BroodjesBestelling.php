@@ -1,74 +1,742 @@
-<?php
-// Hier staan de toegestane keuzes
-$momenten = ['maandag_dinsdag', 'woensdag_donderdag', 'vrijdag'];
-$broodjes = ['hagelslag', 'kaas', 'vlees'];
+/* =========================================================
+   JEUGDVOETBALDAGEN HORST - Stylesheet
+   ========================================================= */
 
-$melding = '';
+/* Lettertype voor titels en menu (moet bovenaan staan) */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&display=swap');
 
-// Is het formulier verstuurd?
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+/* ---------- Kleuren en instellingen op 1 plek ---------- */
+:root {
+    --teal: #1b4d5f;
+    --teal-donker: #12343f;
+    --teal-licht: #2a7088;
+    --rood: #b3222e;
+    --rood-donker: #8c1a24;
+    --gras: #2f6b22;
+    --vak: #e3e5e3;
+    --wit: #ffffff;
+    --tekst: #1f2a2e;
+    --rand: #c3c9c5;
 
-    // Haal de keuzes uit het formulier
-    $moment = $_POST['moment'] ?? '';
-    $broodje1 = $_POST['broodje1'] ?? '';
-    $broodje2 = $_POST['broodje2'] ?? '';
-    $snack = $_POST['snack'] ?? 'geen';
-    $krentenbol = isset($_POST['krentenbol']) ? 1 : 0;
+    --kop-font: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    --tekst-font: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 
-    // Wie bestelt er? Dit komt uit de login, niet uit het formulier
-    $deelnemerId = $_SESSION['deelnemer_id'] ?? 1;
+    --schaduw-klein: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --schaduw-groot: 0 14px 40px rgba(0, 0, 0, 0.35);
+    --snel: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --breedte: 1175px;
+}
 
-    // Controleer of alles klopt
-    if (!in_array($moment, $momenten)) {
-        $melding = 'Kies een geldig moment.';
-    } elseif (!in_array($broodje1, $broodjes)) {
-        $melding = 'Kies een geldig broodje 1.';
-    } elseif ($moment != 'vrijdag' && !in_array($broodje2, $broodjes)) {
-        $melding = 'Kies een geldig broodje 2.';
-    } elseif ($moment == 'vrijdag' && $snack != 'kroket' && $snack != 'frikandel') {
-        $melding = 'Kies op vrijdag een kroket of frikandel.';
-    } else {
+/* ---------- Basis ---------- */
+* {
+    box-sizing: border-box;
+}
 
-        // Op vrijdag geen broodje 2 en geen krentenbol
-        if ($moment == 'vrijdag') {
-            $broodje2 = '';
-            $krentenbol = 0;
-        } else {
-            // Op de andere dagen geen snack
-            $snack = 'geen';
-        }
+html {
+    scroll-behavior: smooth;
+}
 
-        // Maak de map "data" aan als die nog niet bestaat
-        $map = __DIR__ . '/../data';
-        if (!is_dir($map)) {
-            mkdir($map);
-        }
+/* Grasachtergrond met maaistrepen, helemaal in CSS.
+   Wil je een echte foto? Zet bijvoorbeeld images/gras.jpg in je map en
+   vervang de background hieronder door:
+   background: url('../images/gras.jpg') center / cover fixed; */
+body {
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: var(--tekst-font);
+    color: var(--tekst);
+    line-height: 1.6;
+    background:
+        radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.35) 100%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 90px, rgba(0, 0, 0, 0.06) 90px 180px),
+        repeating-linear-gradient(80deg, rgba(0, 0, 0, 0.10) 0 1px, transparent 1px 4px),
+        repeating-linear-gradient(100deg, rgba(150, 220, 70, 0.14) 0 1px, transparent 1px 5px),
+        var(--gras);
+    background-attachment: fixed;
+}
 
-        // Open het bestand en zet er onderaan een regel bij
-        $bestand = $map . '/bestellingen.csv';
-        $isNieuw = !file_exists($bestand);
-        $f = fopen($bestand, 'a');
+::selection {
+    background: var(--rood);
+    color: var(--wit);
+}
 
-        // Bij een nieuw bestand eerst de kopregel
-        if ($isNieuw) {
-            fputcsv($f, ['deelnemer', 'moment', 'broodje1', 'broodje2', 'krentenbol', 'snack']);
-        }
+/* ---------- Animaties ---------- */
+@keyframes verschijnOmhoog {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
-        fputcsv($f, [$deelnemerId, $moment, $broodje1, $broodje2, $krentenbol, $snack]);
-        fclose($f);
+@keyframes verschijnIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
 
-        $melding = 'Bestelling opgeslagen!';
+@keyframes popIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lijnGroei {
+    from { width: 0; }
+    to   { width: 80px; }
+}
+
+@keyframes glijdNaarBinnen {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zweef {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+}
+
+/* ---------- Header met logo en titel (optioneel) ---------- */
+.site-header {
+    position: relative;
+    z-index: 500;
+    padding-top: 20px;
+    animation: glijdNaarBinnen 0.6s ease both;
+}
+
+/* Alleen als je het stukje HTML met logo + titel toevoegt */
+.site-titel {
+    max-width: var(--breedte);
+    margin: 0 auto 22px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.site-titel img {
+    height: 130px;
+    width: auto;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+    animation: zweef 4s ease-in-out infinite;
+}
+
+.site-titel span {
+    font-family: var(--kop-font);
+    font-size: clamp(22px, 4vw, 44px);
+    font-weight: 700;
+    color: var(--wit);
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- Navigatiebalk (witte zwevende balk) ---------- */
+.navbar {
+    max-width: var(--breedte);
+    min-height: 58px;
+    margin: 0 auto;
+    padding: 6px 22px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 16px;
+    background: linear-gradient(#ffffff, #e9ecea);
+    border-radius: 6px;
+    box-shadow: var(--schaduw-groot);
+}
+
+.nav-logo {
+    font-family: var(--kop-font);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--teal);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform var(--snel);
+}
+
+.nav-logo span {
+    color: var(--rood);
+}
+
+.nav-logo:hover {
+    transform: scale(1.05);
+}
+
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+}
+
+.nav-links a {
+    position: relative;
+    padding: 18px 10px;
+    font-family: var(--kop-font);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--teal-donker);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color var(--snel);
+}
+
+/* Rode lijn die van links naar rechts groeit */
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    width: 0;
+    height: 3px;
+    background: var(--rood);
+    border-radius: 2px;
+    transition: width var(--snel);
+}
+
+.nav-links a:hover {
+    color: var(--rood);
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: calc(100% - 20px);
+}
+
+.nav-links a.active {
+    color: var(--rood);
+}
+
+/* Account-knoppen rechts */
+.nav-account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-logout {
+    margin: 0;
+    display: inline-block;
+}
+
+/* ---------- Inhoud van de pagina (grijs vak) ---------- */
+main {
+    max-width: var(--breedte);
+    margin: 30px auto 50px;
+    padding: 40px;
+    background: var(--vak);
+    border-radius: 4px;
+    box-shadow: var(--schaduw-groot);
+    min-height: 320px;
+    animation: verschijnOmhoog 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Elementen in main verschijnen een voor een */
+main > * {
+    animation: verschijnOmhoog 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+main > *:nth-child(1) { animation-delay: 0.10s; }
+main > *:nth-child(2) { animation-delay: 0.18s; }
+main > *:nth-child(3) { animation-delay: 0.26s; }
+main > *:nth-child(4) { animation-delay: 0.34s; }
+main > *:nth-child(5) { animation-delay: 0.42s; }
+
+h1 {
+    margin: 0 0 18px;
+    text-align: center;
+    font-family: var(--kop-font);
+    font-size: clamp(22px, 3.5vw, 34px);
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--teal);
+}
+
+/* Rode lijn onder de titel die groeit */
+h1::after {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 4px;
+    margin: 14px auto 0;
+    background: var(--rood);
+    border-radius: 2px;
+    animation: lijnGroei 0.9s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+h2 {
+    margin: 28px 0 12px;
+    font-family: var(--kop-font);
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--teal);
+}
+
+h3 {
+    font-family: var(--kop-font);
+    color: var(--teal);
+}
+
+p {
+    color: #2e3a3e;
+}
+
+/* Uitleg boven het formulier even breed als het formulier */
+main > p {
+    max-width: 640px;
+    margin-left: 0;
+    margin-right: auto;
+}
+
+main a {
+    color: var(--teal-licht);
+    font-weight: 600;
+    text-decoration: none;
+    background: linear-gradient(var(--rood), var(--rood)) no-repeat 0 100% / 0 2px;
+    transition: background-size var(--snel), color var(--snel);
+}
+
+main a:hover {
+    color: var(--rood);
+    background-size: 100% 2px;
+}
+
+/* Gecentreerde teksten */
+h2.midden,
+.midden,
+.melding {
+    text-align: center;
+}
+
+/* ---------- Hero-banner voor de homepage (optioneel) ---------- */
+/* Gebruik: <div class="hero"><h2>Welkom...</h2><p>38e editie...</p></div>
+   Wil je de teamfoto erachter? Zet 'm in images/hero.jpg */
+.hero {
+    max-width: var(--breedte);
+    min-height: 320px;
+    margin: 30px auto 0;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    color: var(--wit);
+    border-radius: 6px;
+    background:
+        linear-gradient(rgba(10, 30, 12, 0.55), rgba(10, 30, 12, 0.55)),
+        url('../images/hero.jpg') center / cover,
+        #27431f;
+    box-shadow: var(--schaduw-groot);
+    animation: verschijnOmhoog 0.8s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.hero h2,
+.hero p {
+    margin: 0;
+    font-family: var(--kop-font);
+    font-weight: 700;
+    color: var(--wit);
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+}
+
+.hero h2 {
+    font-size: clamp(18px, 3vw, 30px);
+    text-transform: none;
+}
+
+.hero p {
+    font-size: clamp(22px, 4.5vw, 46px);
+}
+
+/* ---------- Meldingen ---------- */
+.melding {
+    max-width: 640px;
+    margin: 20px auto;
+    padding: 14px 20px;
+    background: var(--wit);
+    border-left: 5px solid var(--teal);
+    border-radius: 6px;
+    box-shadow: var(--schaduw-klein);
+    animation: glijdNaarBinnen 0.5s ease both;
+}
+
+/* ---------- Formulieren ---------- */
+form {
+    margin-top: 24px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-donker);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+select,
+textarea {
+    width: 100%;
+    padding: 13px 16px;
+    margin-bottom: 14px;
+    font: inherit;
+    color: var(--tekst);
+    background: var(--wit);
+    border: 2px solid var(--rand);
+    border-radius: 6px;
+    transition: border-color var(--snel), box-shadow var(--snel), transform var(--snel);
+}
+
+textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: var(--teal-licht);
+}
+
+/* Veld krijgt een blauwe gloed bij klikken */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 4px rgba(27, 77, 95, 0.18);
+    transform: translateY(-1px);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #9aa5a8;
+}
+
+/* Rood randje bij een fout ingevuld veld (pas nadat je getypt hebt) */
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
+    border-color: var(--rood);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--rood);
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* Label met een checkbox erin (keeper) */
+label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--wit);
+    border: 2px dashed var(--teal-licht);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background var(--snel), border-color var(--snel);
+}
+
+label:has(input[type="checkbox"]):hover {
+    background: #f1f7f9;
+    border-color: var(--rood);
+}
+
+/* Inschrijfformulier: nette kolom, VASTGEZET aan de linkerkant */
+main form {
+    width: 100%;
+    max-width: 640px;
+    margin: 24px auto 0 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+main form label {
+    margin-top: 12px;
+}
+
+.tel-groep,
+.tel-groep2 {
+    display: block;
+}
+
+/* Losse formulieren in het midden (login/registreren) */
+.formulier {
+    width: 100%;
+    max-width: 400px;
+    margin: 24px auto;
+    padding: 30px;
+    background: var(--wit);
+    border-radius: 8px;
+    box-shadow: var(--schaduw-klein);
+}
+
+.verwijder {
+    display: inline;
+    margin: 0;
+}
+
+/* ---------- Knoppen ---------- */
+button,
+.button,
+input[type="submit"] {
+    position: relative;
+    display: inline-block;
+    padding: 13px 26px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--kop-font);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--wit);
+    cursor: pointer;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--teal-licht), var(--teal));
+    box-shadow: 0 6px 16px rgba(18, 52, 63, 0.35);
+    transition: transform var(--snel), box-shadow var(--snel), background var(--snel);
+}
+
+/* Glans die over de knop veegt */
+button::before,
+.button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-20deg);
+}
+
+button:hover::before,
+.button:hover::before {
+    left: 130%;
+    transition: left 0.7s ease;
+}
+
+button:hover,
+.button:hover,
+input[type="submit"]:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(135deg, var(--rood), var(--rood-donker));
+    box-shadow: 0 12px 24px rgba(140, 26, 36, 0.4);
+    color: var(--wit);
+}
+
+button:active,
+.button:active,
+input[type="submit"]:active {
+    transform: translateY(0) scale(0.97);
+}
+
+button:focus-visible,
+.button:focus-visible,
+input[type="submit"]:focus-visible {
+    outline: 3px solid var(--teal-licht);
+    outline-offset: 3px;
+}
+
+/* Verzendknop van het formulier: breed */
+main form input[type="submit"] {
+    margin-top: 24px;
+    padding: 16px;
+    font-size: 15px;
+}
+
+/* Knoppen in de navbar zijn kleiner */
+.nav-account button,
+.nav-logout button {
+    padding: 9px 16px;
+    font-size: 11px;
+    box-shadow: none;
+}
+
+/* Verwijder-knoppen in tabellen */
+.verwijder button {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #d9534f, var(--rood));
+    box-shadow: 0 4px 12px rgba(179, 34, 46, 0.3);
+}
+
+/* ---------- Tabellen ---------- */
+table {
+    width: 100%;
+    margin: 28px 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--wit);
+    border-radius: 6px;
+    box-shadow: var(--schaduw-klein);
+    overflow: hidden;
+}
+
+thead th {
+    padding: 16px;
+    text-align: left;
+    font-family: var(--kop-font);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--wit);
+    background: linear-gradient(135deg, var(--teal-donker), var(--teal));
+}
+
+td {
+    padding: 15px 16px;
+    font-size: 14px;
+    text-align: left;
+    border-bottom: 1px solid #e6eaec;
+    transition: background var(--snel);
+}
+
+tbody tr {
+    transition: background var(--snel);
+}
+
+tbody tr:nth-child(even) {
+    background: #f4f7f8;
+}
+
+tbody tr:hover {
+    background: #e3eef2;
+}
+
+/* Rood streepje links bij hover */
+tbody tr:hover td:first-child {
+    box-shadow: inset 4px 0 0 var(--rood);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Klikbare rijen (teams) */
+.teamrij {
+    cursor: pointer;
+}
+
+.teamrij:hover td {
+    color: var(--teal);
+    font-weight: 600;
+}
+
+/* ---------- Pop-up scherm (modal) ---------- */
+/* Let op: display:flex wordt door je JavaScript gezet */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(5, 20, 8, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: verschijnIn 0.3s ease both;
+}
+
+.modal-inhoud {
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    background: var(--wit);
+    border-radius: 10px;
+    border-top: 5px solid var(--rood);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    animation: popIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.modal-inhoud h2 {
+    margin-top: 0;
+}
+
+.modal-inhoud button {
+    margin: 6px 6px 0 0;
+}
+
+/* ---------- Mobiel ---------- */
+@media (max-width: 800px) {
+    .site-titel {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .site-titel img {
+        height: 90px;
+    }
+
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 18px;
+        gap: 8px;
+        margin: 0 12px;
+    }
+
+    .nav-links a {
+        padding: 10px;
+    }
+
+    main,
+    .hero {
+        margin-left: 12px;
+        margin-right: 12px;
+    }
+
+    main {
+        padding: 24px 16px;
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    .modal-inhoud {
+        padding: 24px;
     }
 }
-?>
 
-<h1>Broodjes bestellen</h1>
+/* ---------- Animaties uit voor mensen die dat willen ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
 
-<?php if ($melding != '') { ?>
-    <!-- htmlspecialchars zorgt dat er geen gekke code in de pagina kan komen -->
-    <p><?= htmlspecialchars($melding) ?></p>
-<?php } ?>
+/* ---------- Scrollbalk in de huisstijl ---------- */
+::-webkit-scrollbar {
+    width: 12px;
+}
 
-<form method="post">
-    <label>Voor welke dagen?</label><br>
-    <select name="moment">
+::-webkit-scrollbar-track {
+    background: var(--teal-donker);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--teal-licht);
+    border-radius: 10px;
+    border: 3px solid var(--teal-donker);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--rood);
+}

@@ -1,445 +1,754 @@
-/* Algemene instellingen */
+/* =========================================================
+   JEUGDVOETBALDAGEN HORST - Stylesheet
+   ========================================================= */
+
+/* Lettertype voor titels en menu (moet bovenaan staan) */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&display=swap');
+
+/* ---------- Kleuren en instellingen op 1 plek ---------- */
+:root {
+    --teal: #1b4d5f;
+    --teal-donker: #12343f;
+    --teal-licht: #2a7088;
+    --rood: #b3222e;
+    --rood-donker: #8c1a24;
+    --gras: #2f6b22;
+    --vak: #e3e5e3;
+    --wit: #ffffff;
+    --tekst: #1f2a2e;
+    --rand: #c3c9c5;
+
+    --kop-font: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    --tekst-font: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+
+    --schaduw-klein: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --schaduw-groot: 0 14px 40px rgba(0, 0, 0, 0.35);
+    --snel: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --breedte: 1175px;
+}
+
+/* ---------- Basis ---------- */
 * {
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
+/* Grasachtergrond met maaistrepen, helemaal in CSS.
+   Wil je een echte foto? Zet bijvoorbeeld images/gras.jpg in je map en
+   vervang de background hieronder door:
+   background: url('../images/gras.jpg') center / cover fixed; */
 body {
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f3f5f3;
-    color: #252a27;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: var(--tekst-font);
+    color: var(--tekst);
+    line-height: 1.6;
+    background:
+        radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.35) 100%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 90px, rgba(0, 0, 0, 0.06) 90px 180px),
+        repeating-linear-gradient(80deg, rgba(0, 0, 0, 0.10) 0 1px, transparent 1px 4px),
+        repeating-linear-gradient(100deg, rgba(150, 220, 70, 0.14) 0 1px, transparent 1px 5px),
+        var(--gras);
+    background-attachment: fixed;
 }
 
-/* Navigatiebalk */
+::selection {
+    background: var(--rood);
+    color: var(--wit);
+}
+
+/* ---------- Animaties ---------- */
+@keyframes verschijnOmhoog {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes verschijnIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lijnGroei {
+    from { width: 0; }
+    to   { width: 80px; }
+}
+
+@keyframes glijdNaarBinnen {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zweef {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+}
+
+/* ---------- Header met logo en titel (optioneel) ---------- */
+/* Bovenin is ruimte gelaten voor de Inloggen/Registreren-knoppen */
 .site-header {
-    background: #18251f;
-    border-bottom: 4px solid #73b83e;
-    box-shadow: 0 3px 10px #00000018;
+    position: relative;
+    z-index: 500;
+    padding-top: 58px;
+    animation: glijdNaarBinnen 0.6s ease both;
 }
 
-.navbar {
-    max-width: 1200px;
-    min-height: 76px;
-    margin: 0 auto;
-    padding: 0 24px;
+/* Alleen als je het stukje HTML met logo + titel toevoegt */
+.site-titel {
+    max-width: var(--breedte);
+    margin: 0 auto 22px;
+    padding: 0 10px;
     display: flex;
     align-items: center;
+    gap: 22px;
+}
+
+.site-titel img {
+    height: 130px;
+    width: auto;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+    animation: zweef 4s ease-in-out infinite;
+}
+
+.site-titel span {
+    font-family: var(--kop-font);
+    font-size: clamp(22px, 4vw, 44px);
+    font-weight: 700;
+    color: var(--wit);
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- Navigatiebalk (witte zwevende balk) ---------- */
+.navbar {
+    position: relative;
+    max-width: var(--breedte);
+    min-height: 58px;
+    margin: 0 auto;
+    padding: 6px 22px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-    gap: 25px;
+    gap: 6px 16px;
+    background: linear-gradient(#ffffff, #e9ecea);
+    border-radius: 6px;
+    box-shadow: var(--schaduw-groot);
 }
 
 .nav-logo {
-    color: white;
-    font-size: 25px;
+    font-family: var(--kop-font);
+    font-size: 17px;
     font-weight: 800;
+    color: var(--teal);
     text-decoration: none;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    transition: transform var(--snel);
 }
 
 .nav-logo span {
-    color: #8bc34a;
+    color: var(--rood);
+}
+
+.nav-logo:hover {
+    transform: scale(1.05);
 }
 
 .nav-links {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 0;
 }
 
 .nav-links a {
-    color: white;
+    position: relative;
+    padding: 18px 10px;
+    font-family: var(--kop-font);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--teal-donker);
     text-decoration: none;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 13px 16px;
-    border-radius: 4px;
-    transition: background 0.2s, color 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    transition: color var(--snel);
 }
 
-.nav-links a:hover,
+/* Rode lijn die van links naar rechts groeit */
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    width: 0;
+    height: 3px;
+    background: var(--rood);
+    border-radius: 2px;
+    transition: width var(--snel);
+}
+
+.nav-links a:hover {
+    color: var(--rood);
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: calc(100% - 20px);
+}
+
 .nav-links a.active {
-    background: #73b83e;
-    color: #17221b;
+    color: var(--rood);
 }
 
-/* Inhoud van de pagina */
-main {
-    max-width: 1200px;
-    margin: 35px auto;
-    padding: 30px;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 3px 15px #00000008;
-    min-height: 300px;
+/* Account-knoppen: rechtsboven, boven de navigatiebalk op het gras */
+.nav-account {
+    position: absolute;
+    top: -44px;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
+
+.nav-logout {
+    margin: 0;
+    display: inline-block;
+}
+
+/* ---------- Inhoud van de pagina (grijs vak) ---------- */
+main {
+    display: block;
+    max-width: var(--breedte);
+    margin: 30px auto 50px;
+    padding: 40px;
+    background: var(--vak);
+    border-radius: 4px;
+    box-shadow: var(--schaduw-groot);
+    min-height: 320px;
+    text-align: left;
+    animation: verschijnOmhoog 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Elementen in main verschijnen een voor een */
+main > * {
+    animation: verschijnOmhoog 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+main > *:nth-child(1) { animation-delay: 0.10s; }
+main > *:nth-child(2) { animation-delay: 0.18s; }
+main > *:nth-child(3) { animation-delay: 0.26s; }
+main > *:nth-child(4) { animation-delay: 0.34s; }
+main > *:nth-child(5) { animation-delay: 0.42s; }
 
 h1 {
-    margin: 0 0 10px;
-    color: #18251f;
-    font-size: 30px;
-    font-weight: 800;
+    margin: 0 0 18px;
+    text-align: center;
+    font-family: var(--kop-font);
+    font-size: clamp(22px, 3.5vw, 34px);
+    font-weight: 700;
+    line-height: 1.25;
     text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--teal);
 }
 
+/* Rode lijn onder de titel die groeit */
 h1::after {
     content: "";
     display: block;
-    width: 65px;
+    width: 80px;
     height: 4px;
-    margin-top: 12px;
-    background: #73b83e;
+    margin: 14px auto 0;
+    background: var(--rood);
     border-radius: 2px;
+    animation: lijnGroei 0.9s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 h2 {
-    color: #18251f;
-}
-
-/* Formulieren en zoeken */
-form {
-    margin-top: 25px;
-}
-
-input,
-select,
-textarea {
-    padding: 12px 14px;
-    border: 1px solid #d6dcd7;
-    border-radius: 4px;
-    background: #fff;
-    font: inherit;
-    max-width: 100%;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: 2px solid #a5d47b;
-    border-color: #73b83e;
-}
-
-button,
-.button {
-    display: inline-block;
-    padding: 12px 18px;
-    border: none;
-    border-radius: 4px;
-    background: #73b83e;
-    color: #18251f;
-    font-size: 14px;
-    font-weight: bold;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-button:hover,
-.button:hover {
-    background: #5e9c30;
-}
-
-form a {
-    color: #3f7130;
-    margin-left: 10px;
-    text-decoration: none;
-}
-
-form a:hover {
-    text-decoration: underline;
-}
-
-/* Tabellen */
-table {
-    width: 100%;
-    margin-top: 25px;
-    border-collapse: collapse;
-    background: white;
-}
-
-thead {
-    background: #18251f;
-    color: white;
-}
-
-th {
-    padding: 15px;
-    text-align: left;
-    font-size: 13px;
+    margin: 28px 0 12px;
+    font-family: var(--kop-font);
+    font-size: 22px;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.5px;
+    color: var(--teal);
 }
 
-td {
-    padding: 14px 15px;
-    border-bottom: 1px solid #e5e9e5;
-    font-size: 14px;
+h3 {
+    font-family: var(--kop-font);
+    color: var(--teal);
 }
 
-tbody tr:nth-child(even) {
-    background: #f7f9f6;
+p {
+    color: #2e3a3e;
 }
 
-tbody tr:hover {
-    background: #edf6e7;
-}
-
-/* Links in de inhoud */
 main a {
-    color: #477d2e;
-}
-
-main a.button {
-    color: #18251f;
-}
-
-/* Mobiele weergave */
-@media (max-width: 700px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 18px;
-        gap: 15px;
-    }
-
-    .nav-links {
-        width: 100%;
-        flex-wrap: wrap;
-    }
-
-    .nav-links a {
-        padding: 11px;
-    }
-
-    main {
-        margin: 15px;
-        padding: 20px 15px;
-        overflow-x: auto;
-    }
-
-    h1 {
-        font-size: 24px;
-    }
-
-    table {
-        min-width: 600px;
-    }
-}
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-/* navbar */
-nav {
-    background-color: #333;
-    padding: 10px;
-}
-
-nav a {
-    color: white;
+    color: var(--teal-licht);
+    font-weight: 600;
     text-decoration: none;
-    margin-right: 15px;
+    background: linear-gradient(var(--rood), var(--rood)) no-repeat 0 100% / 0 2px;
+    transition: background-size var(--snel), color var(--snel);
 }
 
-nav a:hover {
-    text-decoration: underline;
+main a:hover {
+    color: var(--rood);
+    background-size: 100% 2px;
 }
 
-/* formulier in het midden */
-form {
-    width: 350px;
-    margin: 20px auto;
-}
-
-h1 {
+/* Gecentreerde teksten */
+h2.midden,
+.midden,
+.melding {
     text-align: center;
+}
+
+/*  Hero-banner layout */
+.hero {
+    max-width: var(--breedte);
+    min-height: 320px;
+    margin: 30px auto 0;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    color: var(--wit);
+    border-radius: 6px;
+    background:
+        linear-gradient(rgba(10, 30, 12, 0.55), rgba(10, 30, 12, 0.55)),
+        url('../images/hero.jpg') center / cover,
+        #27431f;
+    box-shadow: var(--schaduw-groot);
+    animation: verschijnOmhoog 0.8s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.hero h2,
+.hero p {
+    margin: 0;
+    font-family: var(--kop-font);
+    font-weight: 700;
+    color: var(--wit);
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+}
+
+.hero h2 {
+    font-size: clamp(18px, 3vw, 30px);
+    text-transform: none;
+}
+
+.hero p {
+    font-size: clamp(22px, 4.5vw, 46px);
+}
+
+/*  Meldingen */
+.melding {
+    max-width: 640px;
+    margin: 20px auto;
+    padding: 14px 20px;
+    background: var(--wit);
+    border-left: 5px solid var(--teal);
+    border-radius: 6px;
+    box-shadow: var(--schaduw-klein);
+    animation: glijdNaarBinnen 0.5s ease both;
+}
+
+/* Forms */
+form {
+    margin-top: 24px;
 }
 
 label {
     display: block;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-donker);
 }
 
-input {
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+select,
+textarea {
     width: 100%;
-    margin-bottom: 10px;
-    box-sizing: border-box;
+    padding: 13px 16px;
+    margin-bottom: 14px;
+    font: inherit;
+    color: var(--tekst);
+    background: var(--wit);
+    border: 2px solid var(--rand);
+    border-radius: 6px;
+    transition: border-color var(--snel), box-shadow var(--snel), transform var(--snel);
 }
 
-.melding {
-    text-align: center;
-} 
-
-* {
-    box-sizing: border-box;
+textarea {
+    min-height: 110px;
+    resize: vertical;
 }
 
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: var(--teal-licht);
 }
 
-/* navbar */
-nav {
-    background-color: #333;
-    padding: 10px;
+/* op klik blauwe gloed */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 4px rgba(27, 77, 95, 0.18);
+    transform: translateY(-1px);
 }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-right: 15px;
+input::placeholder,
+textarea::placeholder {
+    color: #9aa5a8;
 }
 
-nav a:hover {
-    text-decoration: underline;
+/* Rood randje bij fout ingevuld veld*/
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
+    border-color: var(--rood);
 }
 
-h1, h2, .melding, .midden {
-    text-align: center;
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--rood);
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
 }
 
-/* formulier */
-.formulier {
-    width: 350px;
-    margin: 20px auto;
+/* Label met een checkbox */
+label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--wit);
+    border: 2px dashed var(--teal-licht);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background var(--snel), border-color var(--snel);
 }
 
-.formulier label {
+label:has(input[type="checkbox"]):hover {
+    background: #f1f7f9;
+    border-color: var(--rood);
+}
+
+/* form */
+main form,
+main > form {
+    width: 100% !important;
+    max-width: 640px !important;
+    margin: 24px auto 0 0 !important;
+    float: none !important;
+    align-self: flex-start !important;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+main form label {
+    margin-top: 12px;
+}
+
+.tel-groep,
+.tel-groep2 {
     display: block;
-    margin-bottom: 3px;
 }
 
-.formulier input,
-.formulier select {
+/* formulieren in het midden */
+.formulier {
     width: 100%;
-    margin-bottom: 10px;
+    max-width: 400px;
+    margin: 24px auto;
+    padding: 30px;
+    background: var(--wit);
+    border-radius: 8px;
+    box-shadow: var(--schaduw-klein);
 }
 
 .verwijder {
     display: inline;
+    margin: 0;
 }
 
-/* tabel */
+/* Knoppen */
+button,
+.button,
+input[type="submit"] {
+    position: relative;
+    display: inline-block;
+    padding: 13px 26px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--kop-font);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--wit);
+    cursor: pointer;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--teal-licht), var(--teal));
+    box-shadow: 0 6px 16px rgba(18, 52, 63, 0.35);
+    transition: transform var(--snel), box-shadow var(--snel), background var(--snel);
+}
+
+/* Glans over de knop bij hover */
+button::before,
+.button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-20deg);
+}
+
+button:hover::before,
+.button:hover::before {
+    left: 130%;
+    transition: left 0.7s ease;
+}
+
+button:hover,
+.button:hover,
+input[type="submit"]:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(135deg, var(--rood), var(--rood-donker));
+    box-shadow: 0 12px 24px rgba(140, 26, 36, 0.4);
+    color: var(--wit);
+}
+
+button:active,
+.button:active,
+input[type="submit"]:active {
+    transform: translateY(0) scale(0.97);
+}
+
+button:focus-visible,
+.button:focus-visible,
+input[type="submit"]:focus-visible {
+    outline: 3px solid var(--teal-licht);
+    outline-offset: 3px;
+}
+
+/* Verzendknop van de form */
+main form input[type="submit"] {
+    margin-top: 24px;
+    padding: 16px;
+    font-size: 15px;
+}
+
+/* Knoppen rechtsboven */
+.nav-account button,
+.nav-logout button {
+    padding: 9px 18px;
+    font-size: 11px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Verwijder knoppen in tabellen */
+.verwijder button {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #d9534f, var(--rood));
+    box-shadow: 0 4px 12px rgba(179, 34, 46, 0.3);
+}
+
+/*  Tabellen */
 table {
-    width: 700px;
-    margin: 20px auto;
-    border-collapse: collapse;
+    width: 100%;
+    margin: 28px 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--wit);
+    border-radius: 6px;
+    box-shadow: var(--schaduw-klein);
+    overflow: hidden;
 }
 
-th, td {
-    padding: 6px;
-    border: 1px solid #ccc;
+thead th {
+    padding: 16px;
     text-align: left;
+    font-family: var(--kop-font);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--wit);
+    background: linear-gradient(135deg, var(--teal-donker), var(--teal));
 }
 
-/* klikbare rijen */
+td {
+    padding: 15px 16px;
+    font-size: 14px;
+    text-align: left;
+    border-bottom: 1px solid #e6eaec;
+    transition: background var(--snel);
+}
+
+tbody tr {
+    transition: background var(--snel);
+}
+
+tbody tr:nth-child(even) {
+    background: #f4f7f8;
+}
+
+tbody tr:hover {
+    background: #e3eef2;
+}
+
+/* Rood streepje bij hover */
+tbody tr:hover td:first-child {
+    box-shadow: inset 4px 0 0 var(--rood);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Klikbare rijen in teams */
 .teamrij {
     cursor: pointer;
 }
 
-.teamrij:hover {
-    background-color: #f0f0f0;
+.teamrij:hover td {
+    color: var(--teal);
+    font-weight: 600;
 }
 
-/* scherm */
+/*  Pop-up scherm */
+
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    z-index: 1000;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    padding: 20px;
+    background: rgba(5, 20, 8, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: verschijnIn 0.3s ease both;
 }
 
 .modal-inhoud {
-    width: 400px;
-    max-width: 90%;
-    max-height: 90%;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
     overflow-y: auto;
-    padding: 20px;
-    background-color: white;
-    border: 1px solid #ccc;
+    padding: 32px;
+    background: var(--wit);
+    border-radius: 10px;
+    border-top: 5px solid var(--rood);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    animation: popIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
 .modal-inhoud h2 {
     margin-top: 0;
 }
 
-.modal-inhoud label {
-    display: block;
-    margin-bottom: 3px;
-}
-
-.modal-inhoud input,
-.modal-inhoud select {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 6px;
-}
-
 .modal-inhoud button {
-    padding: 8px 12px;
-    margin: 5px 4px 0 0;
+    margin: 6px 6px 0 0;
 }
 
-/* inschrijfformulier */
+/*  Mobiel */
+@media (max-width: 800px) {
+    .site-header {
+        padding-top: 20px;
+    }
 
-/* Formulier */
-main form {
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 20px;
+    .site-titel {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .site-titel img {
+        height: 90px;
+    }
+
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 18px;
+        gap: 8px;
+        margin: 0 12px;
+    }
+
+    /* Op mobiel*/
+    .nav-account {
+        position: static;
+    }
+
+    .nav-links a {
+        padding: 10px;
+    }
+
+    main,
+    .hero {
+        margin-left: 12px;
+        margin-right: 12px;
+    }
+
+    main {
+        padding: 24px 16px;
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    .modal-inhoud {
+        padding: 24px;
+    }
 }
 
-/* Labels */
-main form label {
-    font-weight: bold;
-    margin-top: 10px;
+/* Animaties uit */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
 }
 
-/* Alle invulvelden */
-main form input[type="text"],
-main form input[type="tel"],
-main form input[type="date"],
-main form select {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    width: 100%;
-    box-sizing: border-box;
+/* Scrollbalk */
+::-webkit-scrollbar {
+    width: 12px;
 }
 
-main form input:focus,
-main form select:focus {
-    outline: none;
-    border-color: #2e7d32;
+::-webkit-scrollbar-track {
+    background: var(--teal-donker);
 }
 
-/* Checkbox keeper */
-main form input[type="checkbox"] {
-    margin-right: 8px;
+::-webkit-scrollbar-thumb {
+    background: var(--teal-licht);
+    border-radius: 10px;
+    border: 3px solid var(--teal-donker);
 }
 
-/* Verzendknop */
-main form input[type="submit"] {
-    margin-top: 20px;
-    padding: 12px;
-    background-color: #2e7d32;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-main form input[type="submit"]:hover {
-    background-color: #1b5e20;
+::-webkit-scrollbar-thumb:hover {
+    background: var(--rood);
 }

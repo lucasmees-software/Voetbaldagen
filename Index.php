@@ -8,5 +8,6 @@
 </head>
 <body>
     <?php include('../voetbaldagen/Includes/Navigatie.php') ?>
+    <div class="hero"><h2>Welkom...</h2><p>38e editie...</p></div>
 </body>
 </html>

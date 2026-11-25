@@ -62,7 +62,7 @@ try {
     $bestaand = $stmt->fetch();
 
     if ($bestaand) {
-        // Zelfde deelnemer van vorige jaren: id hergebruiken
+        // ID hergebruiken
         $deelnemer_id = $bestaand['deelnemer_id'];
     } else {
         // Nieuwe deelnemer opslaan
@@ -90,5 +90,4 @@ try {
 
 } catch (PDOException $e) {
     $pdo->rollBack();
-
 }
